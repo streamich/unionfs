@@ -1,0 +1,10 @@
+{
+  "name": "unionfs",
+  "version": "0.0.1",
+  "description": "Use multiple `fs` modules at once.",
+  "main": "index.js",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/streamich/unionfs.git"
+  }
+}
