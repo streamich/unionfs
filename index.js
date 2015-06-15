@@ -50,7 +50,7 @@ var UnionFS = (function () {
         return this;
     };
     UnionFS.prototype._syncMethod = function (method, args) {
-        for (var i = 0; i < this.fss.length; i++) {
+        for (var i = this.fss.length - 1; i >= 0; i--) {
             var fs = this.fss[i];
             var funcs = this.funcs[i];
             try {
@@ -90,8 +90,9 @@ var UnionFS = (function () {
                 if (cb)
                     cb.apply(cb, arguments);
             };
-            var fs = this.fss[i];
-            var funcs = this.funcs[i];
+            var j = this.fss.length - i - 1;
+            var fs = this.fss[j];
+            var funcs = this.funcs[j];
             if (!funcs[method])
                 iterate(i + 1, Error('Method not supported: ' + method));
             funcs[method].apply(fs, args);
