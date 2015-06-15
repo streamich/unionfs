@@ -4,7 +4,7 @@ Creates a union of multiple `fs` file systems.
 
 This module allows you to use multiple objects that have file system `fs` API at the same time.
 
-Use this module with [`memfs`](http://www.npmjs.com/package/memfs) and [`linkfs`](http://www.npmjs.com/package/memfs).
+Use this module with [`memfs`](http://www.npmjs.com/package/memfs) and [`linkfs`](http://www.npmjs.com/package/linkfs).
 `memfs` allows you to create virtual in-memory file system. `linkfs` allows you to rewrite `fs` paths.
 
 ```javascript
