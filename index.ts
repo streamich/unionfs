@@ -212,7 +212,7 @@ class UnionFS {
                 if(!funcs[method]) throw Error('Method not supported: ' + method);
                 return funcs[method].apply(fs, args);
             } catch(e) {
-                if(i >= this.fss.length - 1) { // last one
+                if(!i) { // last one
                     throw e;
                 } else {
                     // Ignore error...
@@ -233,7 +233,7 @@ class UnionFS {
 
         var iterate = function iterate(i = 0, err?) {
             // Already tried all file systems, return the last error.
-            if(i >= this.union.length) {
+            if(i >= this.union.length) { // last one
                 if(cb) cb(err ? err : Error('No file systems attached.'));
                 return;
             }

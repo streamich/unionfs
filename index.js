@@ -59,7 +59,7 @@ var UnionFS = (function () {
                 return funcs[method].apply(fs, args);
             }
             catch (e) {
-                if (i >= this.fss.length - 1) {
+                if (!i) {
                     throw e;
                 }
                 else {
