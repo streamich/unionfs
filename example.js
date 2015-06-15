@@ -1,17 +1,7 @@
-# unionfs
-
-Creates a union of multiple `fs` file systems.
-
-This module allows you to use multiple objects that have file system `fs` API at the same time.
-
-Use this module with [`memfs`](http://www.npmjs.com/package/memfs) and [`linkfs`](http://www.npmjs.com/package/memfs).
-`memfs` allows you to create virtual in-memory file system. `linkfs` allows you to rewrite `fs` paths.
-
-```javascript
 var fs = require('fs');
-var unionfs = require('unionfs');
-var linkfs = require('linkfs');
-var memfs = require('memfs');
+var unionfs = require('./index');
+var linkfs = require('../linkfs/index');
+var memfs = require('../memfs/index');
 
 
 // Create a virtual file.
@@ -53,4 +43,3 @@ require('/usr/mem/dir/hello.js');
 // Hello world!
 require('/project/hello.js');
 // Hello world!
-```

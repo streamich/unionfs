@@ -1,6 +1,6 @@
 {
   "name": "unionfs",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Use multiple `fs` modules at once.",
   "main": "index.js",
   "repository": {
