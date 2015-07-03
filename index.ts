@@ -223,7 +223,7 @@ class UnionFS {
     }
 
     private _asyncMethod(method, args) {
-        args = [].slice.apply(args, 0); // Convert `arguments` to `Array`.
+        args = [].slice.call(args, 0); // Convert `arguments` to `Array`.
         var lastarg = args.length - 1;
         var cb = args[lastarg];
         if(typeof cb != 'function') {
@@ -233,7 +233,7 @@ class UnionFS {
 
         var iterate = function iterate(i = 0, err?) {
             // Already tried all file systems, return the last error.
-            if(i >= this.union.length) { // last one
+            if(i >= this.fss.length) { // last one
                 if(cb) cb(err ? err : Error('No file systems attached.'));
                 return;
             }

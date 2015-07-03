@@ -68,7 +68,7 @@ var UnionFS = (function () {
         }
     };
     UnionFS.prototype._asyncMethod = function (method, args) {
-        args = [].slice.apply(args, 0); // Convert `arguments` to `Array`.
+        args = [].slice.call(args, 0); // Convert `arguments` to `Array`.
         var lastarg = args.length - 1;
         var cb = args[lastarg];
         if (typeof cb != 'function') {
@@ -78,7 +78,7 @@ var UnionFS = (function () {
         var iterate = function iterate(i, err) {
             if (i === void 0) { i = 0; }
             // Already tried all file systems, return the last error.
-            if (i >= this.union.length) {
+            if (i >= this.fss.length) {
                 if (cb)
                     cb(err ? err : Error('No file systems attached.'));
                 return;
