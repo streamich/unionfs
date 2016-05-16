@@ -1,6 +1,6 @@
 {
   "name": "unionfs",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Use multiple `fs` modules in a union.",
   "main": "index.js",
   "keywords": ["fs", "file", "file system", "mount", "union", "unionfs", "many file systems", "multiple"],

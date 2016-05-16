@@ -95,10 +95,11 @@ var UnionFS = (function () {
             cb = null;
             lastarg++;
         }
+        var self = this;
         var iterate = function iterate(i, err) {
             if (i === void 0) { i = 0; }
             // Already tried all file systems, return the last error.
-            if (i >= this.fss.length) {
+            if (i >= self.fss.length) {
                 if (cb)
                     cb(err ? err : Error('No file systems attached.'));
                 return;
@@ -110,13 +111,13 @@ var UnionFS = (function () {
                 if (cb)
                     cb.apply(cb, arguments);
             };
-            var j = this.fss.length - i - 1;
-            var fs = this.fss[j];
-            var funcs = this.funcs[j];
+            var j = self.fss.length - i - 1;
+            var fs = self.fss[j];
+            var funcs = self.funcs[j];
             if (!funcs[method])
                 iterate(i + 1, Error('Method not supported: ' + method));
             funcs[method].apply(fs, args);
-        }.bind(this);
+        };
         iterate();
     };
     UnionFS._props = [

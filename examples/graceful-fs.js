@@ -13,12 +13,13 @@ unionfs
     .use(fs)
     .replace(fs);
 
-var gfs = require('graceful-fs');
 
-var path = __dirname + '/../package.json';
-var path2 = __dirname + '/test.txt';
+// var gfs = require('graceful-fs');
 
-console.log(gfs.readFileSync(path).toString());
-console.log(gfs.readFileSync(path2).toString());
+// gfs.createReadStream(__dirname + '/../package.json').on('data', function(data) {
+//     console.log(data.toString());
+// });
 
-
+fs.createReadStream(__dirname + '/test.txt').on('data', function(data) {
+    console.log(data.toString());
+});
