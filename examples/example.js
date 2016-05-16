@@ -1,7 +1,7 @@
 var fs = require('fs');
-var unionfs = require('./index');
-var linkfs = require('../linkfs/index');
-var memfs = require('../memfs/index');
+var unionfs = require('../index');
+var linkfs = require('../../linkfs/index');
+var memfs = require('../../memfs/index');
 
 
 // Create a virtual file.
@@ -38,8 +38,9 @@ console.log(fs.readFileSync('/project/hello.js').toString());
 // console.log("Hello world!");
 
 
+// NOTE: This does not work in new Node.js
 // Now you can also do:
-require('/usr/mem/dir/hello.js');
+// require('/usr/mem/dir/hello.js');
 // Hello world!
-require('/project/hello.js');
+// require('/project/hello.js');
 // Hello world!

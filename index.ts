@@ -1,6 +1,10 @@
 
 
 interface IFS {
+    FSWatcher: any;
+    ReadStream: any;
+    WriteStream: any;
+    Stats: any;
     readFileSync();
     renameSync();
     ftruncateSync();
@@ -76,7 +80,14 @@ interface IFS {
 
 class UnionFS {
 
-    private static sync = [
+    private static _props = [
+        'FSWatcher',
+        'ReadStream',
+        'WriteStream',
+        'Stats',
+    ];
+
+    private static _sync = [
         'renameSync',
         'ftruncateSync',
         'truncateSync',
@@ -117,7 +128,7 @@ class UnionFS {
         'watch'
     ];
 
-    private static async = [
+    private static _async = [
         'rename',
         'ftruncate',
         'truncate',
@@ -158,34 +169,29 @@ class UnionFS {
 
     funcs: any[] = [];
 
+    props: any[] = [];
+
     init() {
         var self = this;
-        for(var i = 0; i < UnionFS.sync.length; i++) {
-            (function(method) {
-                self[method] = function() { return self._syncMethod(method, arguments); };
-            })(UnionFS.sync[i]);
-        }
-        for(var i = 0; i < UnionFS.async.length; i++) {
-            (function(method) {
-                self[method] = function() { self._asyncMethod(method, arguments); };
-            })(UnionFS.async[i]);
-        }
+        for(var prop of UnionFS._props) this[prop] = undefined;
+        for(let method of UnionFS._sync) this[method] = function() { return self._syncMethod(method, arguments); };
+        for(let method of UnionFS._async) this[method] = function() { return self._asyncMethod(method, arguments); };
         return this;
     }
 
     // Add a file system to the union.
     use(fs: IFS) {
-        var funcs = {};
-        for(var i = 0; i < UnionFS.sync.length; i++) {
-            var method = UnionFS.sync[i];
-            funcs[method] = fs[method];
+        var funcs = {}, props = {};
+        for(var prop of UnionFS._props) {
+            var property = fs[prop];
+            if(typeof property !== 'undefined') this[prop] = property;
+            props[prop] = property;
         }
-        for(var i = 0; i < UnionFS.async.length; i++) {
-            var method = UnionFS.async[i];
-            funcs[method] = fs[method];
-        }
+        for(var method of UnionFS._sync) funcs[method] = fs[method];
+        for(var method of UnionFS._async) funcs[method] = fs[method];
 
         this.fss.push(fs);
+        this.props.push(props);
         this.funcs.push(funcs); // We save the functions, in case we later use `.replace()` on that `fs`.
 
         return this;
@@ -193,14 +199,9 @@ class UnionFS {
 
     // Replace methods of some file system with this `unionfs` instead.
     replace(fs: IFS) {
-        for(var i = 0; i < UnionFS.sync.length; i++) {
-            var method = UnionFS.sync[i];
-            fs[method] = this[method].bind(this);
-        }
-        for(var i = 0; i < UnionFS.async.length; i++) {
-            var method = UnionFS.async[i];
-            fs[method] = this[method].bind(this);
-        }
+        for(var prop of UnionFS._props) fs[prop] = this[prop];
+        for(var method of UnionFS._sync) fs[method] = this[method].bind(this);
+        for(var method of UnionFS._async) fs[method] = this[method].bind(this);
         return this;
     }
 

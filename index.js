@@ -1,50 +1,70 @@
+"use strict";
 var UnionFS = (function () {
     function UnionFS() {
         this.UnionFS = UnionFS;
         this.fss = [];
         this.funcs = [];
+        this.props = [];
     }
     UnionFS.prototype.init = function () {
         var self = this;
-        for (var i = 0; i < UnionFS.sync.length; i++) {
-            (function (method) {
-                self[method] = function () {
-                    return self._syncMethod(method, arguments);
-                };
-            })(UnionFS.sync[i]);
+        for (var _i = 0, _a = UnionFS._props; _i < _a.length; _i++) {
+            var prop = _a[_i];
+            this[prop] = undefined;
         }
-        for (var i = 0; i < UnionFS.async.length; i++) {
-            (function (method) {
-                self[method] = function () {
-                    self._asyncMethod(method, arguments);
-                };
-            })(UnionFS.async[i]);
+        var _loop_1 = function(method) {
+            this_1[method] = function () { return self._syncMethod(method, arguments); };
+        };
+        var this_1 = this;
+        for (var _b = 0, _c = UnionFS._sync; _b < _c.length; _b++) {
+            var method = _c[_b];
+            _loop_1(method);
+        }
+        var _loop_2 = function(method) {
+            this_2[method] = function () { return self._asyncMethod(method, arguments); };
+        };
+        var this_2 = this;
+        for (var _d = 0, _e = UnionFS._async; _d < _e.length; _d++) {
+            var method = _e[_d];
+            _loop_2(method);
         }
         return this;
     };
     // Add a file system to the union.
     UnionFS.prototype.use = function (fs) {
-        var funcs = {};
-        for (var i = 0; i < UnionFS.sync.length; i++) {
-            var method = UnionFS.sync[i];
+        var funcs = {}, props = {};
+        for (var _i = 0, _a = UnionFS._props; _i < _a.length; _i++) {
+            var prop = _a[_i];
+            var property = fs[prop];
+            if (typeof property !== 'undefined')
+                this[prop] = property;
+            props[prop] = property;
+        }
+        for (var _b = 0, _c = UnionFS._sync; _b < _c.length; _b++) {
+            var method = _c[_b];
             funcs[method] = fs[method];
         }
-        for (var i = 0; i < UnionFS.async.length; i++) {
-            var method = UnionFS.async[i];
+        for (var _d = 0, _e = UnionFS._async; _d < _e.length; _d++) {
+            var method = _e[_d];
             funcs[method] = fs[method];
         }
         this.fss.push(fs);
+        this.props.push(props);
         this.funcs.push(funcs); // We save the functions, in case we later use `.replace()` on that `fs`.
         return this;
     };
     // Replace methods of some file system with this `unionfs` instead.
     UnionFS.prototype.replace = function (fs) {
-        for (var i = 0; i < UnionFS.sync.length; i++) {
-            var method = UnionFS.sync[i];
+        for (var _i = 0, _a = UnionFS._props; _i < _a.length; _i++) {
+            var prop = _a[_i];
+            fs[prop] = this[prop];
+        }
+        for (var _b = 0, _c = UnionFS._sync; _b < _c.length; _b++) {
+            var method = _c[_b];
             fs[method] = this[method].bind(this);
         }
-        for (var i = 0; i < UnionFS.async.length; i++) {
-            var method = UnionFS.async[i];
+        for (var _d = 0, _e = UnionFS._async; _d < _e.length; _d++) {
+            var method = _e[_d];
             fs[method] = this[method].bind(this);
         }
         return this;
@@ -99,7 +119,13 @@ var UnionFS = (function () {
         }.bind(this);
         iterate();
     };
-    UnionFS.sync = [
+    UnionFS._props = [
+        'FSWatcher',
+        'ReadStream',
+        'WriteStream',
+        'Stats',
+    ];
+    UnionFS._sync = [
         'renameSync',
         'ftruncateSync',
         'truncateSync',
@@ -138,7 +164,7 @@ var UnionFS = (function () {
         'unwatchFile',
         'watch'
     ];
-    UnionFS.async = [
+    UnionFS._async = [
         'rename',
         'ftruncate',
         'truncate',
@@ -173,7 +199,8 @@ var UnionFS = (function () {
         'access'
     ];
     return UnionFS;
-})();
+}());
 var unionfs = new UnionFS;
 unionfs.init();
 module.exports = unionfs;
+//# sourceMappingURL=index.js.map

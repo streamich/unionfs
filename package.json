@@ -1,7 +1,7 @@
 {
   "name": "unionfs",
-  "version": "0.0.6",
-  "description": "Use multiple `fs` modules at once.",
+  "version": "0.0.8",
+  "description": "Use multiple `fs` modules in a union.",
   "main": "index.js",
   "keywords": ["fs", "file", "file system", "mount", "union", "unionfs", "many file systems", "multiple"],
   "repository": {
@@ -9,6 +9,7 @@
     "url" : "https://github.com/streamich/unionfs.git"
   },
   "devDependencies": {
+    "graceful-fs": "*",
     "memfs": "*",
     "chai": "*"
   }
