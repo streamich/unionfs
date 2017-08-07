@@ -46,14 +46,6 @@ console.log(fs.readFileSync('/usr/mem/dir/hello.js').toString());
 // console.log("Hello world!");
 console.log(fs.readFileSync('/project/hello.js').toString());
 // console.log("Hello world!");
-
-
-// NOTE: This does not work in new Node.js
-// Now you can also do:
-require('/usr/mem/dir/hello.js');
-// Hello world!
-require('/project/hello.js');
-// Hello world!
 ```
 
 You can create a `unionfs` object manually, but then you have to call `init()` method at the very beginning:
