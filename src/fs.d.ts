@@ -1,9 +1,5 @@
 
 export interface IFS {
-    FSWatcher: any;
-    ReadStream: any;
-    WriteStream: any;
-    Stats: any;
     readFileSync();
     renameSync();
     ftruncateSync();

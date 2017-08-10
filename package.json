@@ -3,22 +3,32 @@
   "version": "2.0.0",
   "description": "Use multiple `fs` modules in a union.",
   "main": "lib/index.js",
-  "keywords": ["fs", "file", "file system", "mount", "union", "unionfs", "many file systems", "multiple"],
+  "keywords": [
+    "fs",
+    "file",
+    "file system",
+    "mount",
+    "union",
+    "unionfs",
+    "many file systems",
+    "multiple"
+  ],
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/streamich/unionfs.git"
+    "type": "git",
+    "url": "https://github.com/streamich/unionfs.git"
   },
   "scripts": {
-    "build":          "npm run build-ts && npm run build-js",
-    "build-ts":       "./node_modules/.bin/gulp build-ts",
-    "build-js":       "./node_modules/.bin/babel src --out-dir lib",
-    "test":           "npm run test-coverage",
-    "test-basic":     "./node_modules/.bin/mocha --require ts-node/register src/**/*.test.ts src/**/*.test.tsx",
-    "test-watch":     "./node_modules/.bin/mocha --require ts-node/register src/**/*.test.ts src/**/*.test.tsx --watch",
-    "test-coverage":  "nyc --per-file mocha --require ts-node/register --require source-map-support/register --full-trace --bail src/**/*.test.ts"
+    "build": "npm run build-ts && npm run build-js",
+    "build-ts": "./node_modules/.bin/gulp build-ts",
+    "build-js": "./node_modules/.bin/babel src --out-dir lib",
+    "test": "npm run test-coverage",
+    "test-basic": "./node_modules/.bin/mocha --require ts-node/register src/**/*.test.ts src/**/*.test.tsx",
+    "test-watch": "./node_modules/.bin/mocha --require ts-node/register src/**/*.test.ts src/**/*.test.tsx --watch",
+    "test-coverage": "nyc --per-file mocha --require ts-node/register --require source-map-support/register --full-trace --bail src/**/*.test.ts"
   },
+  "dependencies": {},
   "devDependencies": {
-    "memfs": "2",
+    "memfs": "../memfs",
     "mocha": "3.4.2",
     "chai": "4.1.0",
     "typescript": "2.4.2",
@@ -29,7 +39,6 @@
     "gulp-typescript": "3.2.1",
     "source-map-support": "0.4.15",
     "nyc": "11.1.0",
-
     "@types/mocha": "2.2.41",
     "@types/chai": "4.0.1",
     "@types/node": "8.0.17"

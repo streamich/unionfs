@@ -11,10 +11,9 @@ export class Union {
 
     fss: IFS[] = [];
 
-    init() {
+    constructor() {
         for(let method of fsSyncMethods) this[method] = (...args) =>  this.syncMethod(method, args);
         for(let method of fsAsyncMethods) this[method] = (...args) => this.asyncMethod(method, args);
-        return this;
     }
 
     // Add a file system to the union.
@@ -75,7 +74,7 @@ export class Union {
             const fs = this.fss[j];
             const func = fs[method];
             if(!func) iterate(i + 1, Error('Method not supported: ' + method));
-            func[method].apply(fs, args);
+            func.apply(fs, args);
         };
         iterate();
     }
