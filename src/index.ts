@@ -1,4 +1,4 @@
-import {Union} from "./union";
+import {Union as _Union} from "./union";
 import {IFS} from "./fs";
 
 
@@ -20,5 +20,7 @@ export interface IUnion {
 }
 
 
-export const ufs = (new Union) as any as IUnion;
+export const Union = _Union;
+
+export const ufs = (new _Union) as any as IUnion;
 export default ufs;
