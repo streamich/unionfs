@@ -2,83 +2,78 @@
 
 Creates a union of multiple `fs` file systems.
 
+[![][npm-img]][npm-url]
+
 This module allows you to use multiple objects that have file system `fs` API at the same time.
 
-Use this module with [`memfs`](http://www.npmjs.com/package/memfs) and [`linkfs`](http://www.npmjs.com/package/linkfs). 
-`memfs` allows you to create virtual in-memory file system. `linkfs` allows you to rewrite `fs` paths.
+```js
+import {ufs} from 'unionfs';
+import {fs as fs1} from 'memfs';
+import * as fs2 from 'fs';
 
-```javascript
-var fs = require('fs');
-var unionfs = require('unionfs');
-var linkfs = require('linkfs');
-var memfs = require('memfs');
+ufs
+    .use(fs1)
+    .use(fs2);
 
-
-// Create a virtual file.
-var mem = new memfs.Volume;
-mem.mountSync('/usr/mem', {
-    'dir/hello.js': 'console.log("Hello world!");'
-});
-console.log(mem.readFileSync('/usr/mem/dir/hello.js').toString());
-// console.log("Hello world!");
-
-
-// Create a filesystem whose paths are rewritten.
-var link = linkfs(mem, {'/project': '/usr/mem/dir'});
-console.log(link.readFileSync('/project/hello.js').toString());
-// console.log("Hello world!");
-
-
-// Combine three file systems, to create a union of file systems.
-unionfs
-    .use(fs)
-    .use(mem)
-    .use(link);
-console.log(unionfs.readFileSync('/usr/mem/dir/hello.js').toString());
-// console.log("Hello world!");
-console.log(unionfs.readFileSync('/project/hello.js').toString());
-// console.log("Hello world!");
-
-
-// Rewrite the real `fs` module with `unionfs`.
-unionfs.replace(fs);
-console.log(fs.readFileSync('/usr/mem/dir/hello.js').toString());
-// console.log("Hello world!");
-console.log(fs.readFileSync('/project/hello.js').toString());
-// console.log("Hello world!");
-
-
-// NOTE: This does not work in new Node.js
-// Now you can also do:
-require('/usr/mem/dir/hello.js');
-// Hello world!
-require('/project/hello.js');
-// Hello world!
+ufs.readFileSync(/* ... */);
 ```
 
-You can create a `unionfs` object manually, but then you have to call `init()` method at the very beginning:
+Use this module with [`memfs`](http://www.npmjs.com/package/memfs) and [`linkfs`](http://www.npmjs.com/package/linkfs). 
+`memfs` allows you to create virtual in-memory file system. `linkfs` allows you to redirect `fs` paths.
+
+You can also use other *fs-like* objects.
+
+```js
+import * as fs from 'fs';
+import {Volume} from 'memfs';
+import * as MemoryFileSystem from 'memory-fs';
+import {ufs} from '../src'
+
+
+const vol1 = Volume.fromJSON({'/memfs-1': '1'});
+const vol2 = Volume.fromJSON({'/memfs-2': '2'});
+
+
+const memoryFs = new MemoryFileSystem;
+memoryFs.writeFileSync('/memory-fs', '3');
+
+
+ufs
+    .use(fs)
+    .use(vol1)
+    .use(vol2)
+    .use(memoryFs);
+
+console.log(ufs.readFileSync('/memfs-1', 'utf8')); // 1
+console.log(ufs.readFileSync('/memfs-2', 'utf8')); // 2
+console.log(ufs.readFileSync('/memory-fs', 'utf8')); // 3
+```
+
+You can create a `Union` instance manually:
 
 ```javascript
-var unionfs = require('unionfs');
+import {Union} from 'unionfs';
 
-var ufs1 = new unionfs.UnionFS; 
+var ufs1 = new Union;
 ufs1
-    .init()
     .use(fs)
-    .use(mem);
+    .use(vol);
     
-var ufs2 = new unionfs.UnionFS;
+var ufs2 = new Union;
 ufs2
-    .init()
     .use(fs)
     .use(/*...*/);
 ```
 
 
-### Testing
+[npm-url]: https://www.npmjs.com/package/unionfs
+[npm-img]: https://img.shields.io/npm/v/unionfs.svg
+[memfs]: https://github.com/streamich/memfs
+[unionfs]: https://github.com/streamich/unionfs
+[linkfs]: https://github.com/streamich/linkfs
+[fs-monkey]: https://github.com/streamich/fs-monkey
 
-    npm i
-    mocha
+
     
 # License
 
