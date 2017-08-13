@@ -1,4 +1,11 @@
-index.ts
-examples
-test/
+*.ts
+/typings
+example.js
+tsd.json
+simple.js
+node_modules
+/test
 .idea
+.idea/
+.nyc_output
+coverage
