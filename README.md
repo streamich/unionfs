@@ -27,7 +27,7 @@ You can also use other *fs-like* objects.
 import * as fs from 'fs';
 import {Volume} from 'memfs';
 import * as MemoryFileSystem from 'memory-fs';
-import {ufs} from '../src'
+import {ufs} from 'unionfs'
 
 
 const vol1 = Volume.fromJSON({'/memfs-1': '1'});
