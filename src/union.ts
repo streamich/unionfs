@@ -1,5 +1,5 @@
 import {IFS} from "./fs";
-import {fsAsyncMethods, fsProps, fsSyncMethods} from "./util";
+const {fsAsyncMethods, fsSyncMethods} = require('fs-monkey/lib/util/lists');
 
 
 export interface IUnionFsError extends Error {
