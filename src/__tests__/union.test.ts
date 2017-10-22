@@ -1,7 +1,5 @@
-import {expect} from 'chai';
-import {Union} from './union';
+import {Union} from '../union';
 import {Volume} from 'memfs/src/volume';
-
 
 describe('union', () => {
     describe('Union', () => {
@@ -10,7 +8,7 @@ describe('union', () => {
                 const vol = Volume.fromJSON({'/foo': 'bar'});
                 const ufs = new Union as any;
                 ufs.use(vol);
-                expect(ufs.readFileSync('/foo', 'utf8')).to.equal('bar');
+                expect(ufs.readFileSync('/foo', 'utf8')).toBe('bar');
             });
             it('File not found', () => {
                 const vol = Volume.fromJSON({'/foo': 'bar'});
@@ -20,7 +18,7 @@ describe('union', () => {
                     ufs.readFileSync('/not-found', 'utf8');
                     throw Error('This should not throw');
                 } catch(err) {
-                    expect(err.code).to.equal('ENOENT');
+                    expect(err.code).toBe('ENOENT');
                 }
             });
             it('Method does not exist', () => {
@@ -32,7 +30,7 @@ describe('union', () => {
                     ufs.readFileSync('/foo', 'utf8');
                     throw Error('not_this');
                 } catch(err) {
-                    expect(err.message).to.not.equal('not_this');
+                    expect(err.message).not.toBe('not_this');
                 }
             });
         });
@@ -42,8 +40,8 @@ describe('union', () => {
                 const ufs = new Union as any;
                 ufs.use(vol);
                 ufs.readFile('/foo', 'utf8', (err, data) => {
-                    expect(err).to.equal(null);
-                    expect(data).to.equal('bar');
+                    expect(err).toBe(null);
+                    expect(data).toBe('bar');
                     done();
                 });
             });
@@ -52,7 +50,7 @@ describe('union', () => {
                 const ufs = new Union as any;
                 ufs.use(vol);
                 ufs.readFile('/not-found', 'utf8', (err, data) => {
-                    expect(err.code).to.equal('ENOENT');
+                    expect(err.code).toBe('ENOENT');
                     done();
                 });
             });
@@ -63,13 +61,13 @@ describe('union', () => {
                 try {
                     ufs.stat('/foo2', 'utf8');
                 } catch(err) {
-                    expect(err).to.be.an.instanceof(TypeError);
+                    expect(err).toBeInstanceOf(TypeError);
                 }
             });
             it('No file systems attached', done => {
                 const ufs = new Union as any;
                 ufs.stat('/foo2', 'utf8', (err, data) => {
-                    expect(err.message).to.equal('No file systems attached.');
+                    expect(err.message).toBe('No file systems attached.');
                     done();
                 });
             });
