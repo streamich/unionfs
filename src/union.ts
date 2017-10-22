@@ -73,8 +73,9 @@ export class Union {
             const j = this.fss.length - i - 1;
             const fs = this.fss[j];
             const func = fs[method];
+
             if(!func) iterate(i + 1, Error('Method not supported: ' + method));
-            func.apply(fs, args);
+            else func.apply(fs, args);
         };
         iterate();
     }
