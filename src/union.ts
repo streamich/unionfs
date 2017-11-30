@@ -1,4 +1,9 @@
 import {IFS} from "./fs";
+
+const isBrowser = typeof __filename === 'undefined';
+const Readable = !isBrowser && require("stream").Readable;
+const Writable = !isBrowser && require("stream").Writable;
+
 const {fsAsyncMethods, fsSyncMethods} = require('fs-monkey/lib/util/lists');
 
 
@@ -11,6 +16,9 @@ export class Union {
 
     fss: IFS[] = [];
 
+    public ReadStream = Readable;
+    public WriteStream = Writable;
+    
     constructor() {
         for(let method of fsSyncMethods) this[method] = (...args) =>  this.syncMethod(method, args);
         for(let method of fsAsyncMethods) this[method] = (...args) => this.asyncMethod(method, args);
