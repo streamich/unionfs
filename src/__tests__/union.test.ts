@@ -10,6 +10,7 @@ describe('union', () => {
                 ufs.use(vol);
                 expect(ufs.readFileSync('/foo', 'utf8')).toBe('bar');
             });
+
             it('File not found', () => {
                 const vol = Volume.fromJSON({'/foo': 'bar'});
                 const ufs = new Union as any;
@@ -21,6 +22,7 @@ describe('union', () => {
                     expect(err.code).toBe('ENOENT');
                 }
             });
+
             it('Method does not exist', () => {
                 const vol = Volume.fromJSON({'/foo': 'bar'});
                 const ufs = new Union as any;
@@ -45,6 +47,7 @@ describe('union', () => {
                     done();
                 });
             });
+
             it('File not found', done => {
                 const vol = Volume.fromJSON({'/foo': 'bar'});
                 const ufs = new Union as any;
@@ -54,6 +57,7 @@ describe('union', () => {
                     done();
                 });
             });
+
             it('No callback provided', () => {
                 const vol = Volume.fromJSON({'/foo': 'bar'});
                 const ufs = new Union as any;
@@ -64,6 +68,7 @@ describe('union', () => {
                     expect(err).toBeInstanceOf(TypeError);
                 }
             });
+
             it('No file systems attached', done => {
                 const ufs = new Union as any;
                 ufs.stat('/foo2', 'utf8', (err, data) => {
