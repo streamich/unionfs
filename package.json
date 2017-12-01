@@ -1,6 +1,6 @@
 {
   "name": "unionfs",
-  "version": "2.0.7",
+  "version": "3.0.0",
   "description": "Use multiple `fs` modules in a union.",
   "main": "lib/index.js",
   "keywords": [
@@ -23,7 +23,8 @@
     "build-js": "./node_modules/.bin/babel src --out-dir lib",
     "test": "jest",
     "test-watch": "jest --watch",
-    "test-coverage": "jest --coverage"
+    "test-coverage": "jest --coverage",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "dependencies": {
     "fs-monkey": "^0.2.2"
@@ -41,7 +42,8 @@
     "source-map-support": "0.4.15",
     "ts-node": "^3.3.0",
     "ts-jest": "^21.1.0",
-    "typescript": "^2.5.3"
+    "typescript": "^2.5.3",
+    "semantic-release": "^8.2.0"
   },
   "jest": {
     "moduleFileExtensions": [
