@@ -1,5 +1,6 @@
-import {Union} from '../union';
+import {Union} from '..';
 import {Volume} from 'memfs/src/volume';
+import * as fs from 'fs';
 
 describe('union', () => {
     describe('Union', () => {
@@ -34,6 +35,20 @@ describe('union', () => {
                 } catch(err) {
                     expect(err.message).not.toBe('not_this');
                 }
+            });
+
+            describe('existsSync()', () => {
+                it('finds file on real file system', () => {
+                    const ufs = new Union;
+
+                    ufs
+                        .use(fs as any)
+                        .use(Volume.fromJSON({"foo.js": ""}, "/tmp") as any)
+
+                    expect(ufs.existsSync(__filename)).toBe(true);
+                    expect(fs.existsSync(__filename)).toBe(true);
+                    expect(ufs.existsSync("/tmp/foo.js")).toBe(true);
+                });
             });
         });
         describe('async methods', () => {

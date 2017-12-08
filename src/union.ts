@@ -40,7 +40,6 @@ export class Union {
                 if(!fs[method]) throw Error('Method not supported: ' + method);
                 return fs[method].apply(fs, args);
             } catch(err) {
-                console.log(err);
                 err.prev = lastError;
                 lastError = err;
 
