@@ -16,6 +16,14 @@ export class Union {
     constructor() {
         for(let method of fsSyncMethods) this[method] = (...args) =>  this.syncMethod(method, args);
         for(let method of fsAsyncMethods) this[method] = (...args) => this.asyncMethod(method, args);
+
+        // Special case `existsSync` - it does not throw, always succeeds.
+        this['existsSync'] = path => {
+            for (const fs of this.fss)
+                if(fs.existsSync(path))
+                    return true;
+            return false;
+        };
     }
 
     // Add a file system to the union.
@@ -32,6 +40,7 @@ export class Union {
                 if(!fs[method]) throw Error('Method not supported: ' + method);
                 return fs[method].apply(fs, args);
             } catch(err) {
+                console.log(err);
                 err.prev = lastError;
                 lastError = err;
 

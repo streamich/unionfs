@@ -31,7 +31,7 @@ export interface IFS {
     readFileSync();
     writeFileSync();
     appendFileSync();
-    existsSync();
+    existsSync(path): boolean;
     accessSync();
     createReadStream();
     createWriteStream();
