@@ -19,8 +19,11 @@ export interface IUnion {
     readFileSync(path: TFilePath, options?: object | TEncoding);
 }
 
+export interface IUnionFs extends IFS {
+    use(fs: IFS): this;
+}
 
-export const Union = _Union;
+export const Union = _Union as any as (new () => IUnionFs);
 
 export const ufs = (new _Union) as any as IUnion;
 export default ufs;
