@@ -1783,9 +1783,13 @@ fs-extra@^5.0.0:
     jsonfile "^4.0.0"
     universalify "^0.1.0"
 
-fs-monkey@^0.2.1, fs-monkey@^0.2.2:
+fs-monkey@^0.2.1:
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/fs-monkey/-/fs-monkey-0.2.2.tgz#1c046adafeb715012d90f2ca3e951c70398d6138"
+
+fs-monkey@^0.3.0:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/fs-monkey/-/fs-monkey-0.3.1.tgz#69edd8420e04da04d4d3ea200da1ccdc444eecd0"
 
 fs-readdir-recursive@^1.0.0:
   version "1.0.0"
