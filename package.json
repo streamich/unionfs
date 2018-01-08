@@ -27,7 +27,7 @@
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "dependencies": {
-    "fs-monkey": "^0.2.2"
+    "fs-monkey": "^0.3.0"
   },
   "devDependencies": {
     "@types/jest": "21.1.10",
