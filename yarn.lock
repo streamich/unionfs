@@ -1925,9 +1925,9 @@ gulp-sourcemaps@1.6.0:
     through2 "^2.0.0"
     vinyl "^1.0.0"
 
-gulp-typescript@3.2.3:
-  version "3.2.3"
-  resolved "https://registry.yarnpkg.com/gulp-typescript/-/gulp-typescript-3.2.3.tgz#32d52ab97b97c4ce070c0419db08ea3af514d720"
+gulp-typescript@3.2.4:
+  version "3.2.4"
+  resolved "https://registry.yarnpkg.com/gulp-typescript/-/gulp-typescript-3.2.4.tgz#17c6b941078b02c0522974ed6c963ab190920a47"
   dependencies:
     gulp-util "~3.0.7"
     source-map "~0.5.3"
