@@ -41,7 +41,7 @@
     "jest": "21.2.1",
     "ts-node": "4.1.0",
     "source-map-support": "0.5.3",
-    "ts-jest": "22.0.2",
+    "ts-jest": "22.0.3",
     "typescript": "2.7.1",
     "semantic-release": "12.4.1"
   },
