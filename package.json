@@ -37,7 +37,7 @@
     "gulp": "3.9.1",
     "gulp-typescript": "4.0.1",
     "memory-fs": "0.4.1",
-    "memfs": "2.7.0",
+    "memfs": "2.7.1",
     "jest": "21.2.1",
     "ts-node": "4.1.0",
     "source-map-support": "0.5.3",
