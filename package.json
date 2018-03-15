@@ -39,7 +39,7 @@
     "memory-fs": "0.4.1",
     "memfs": "2.8.0",
     "jest": "21.2.1",
-    "ts-node": "4.1.0",
+    "ts-node": "5.0.1",
     "source-map-support": "0.5.4",
     "ts-jest": "22.4.1",
     "typescript": "2.7.2",
