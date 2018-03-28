@@ -2028,9 +2028,9 @@ growly@^1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
 
-gulp-typescript@4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/gulp-typescript/-/gulp-typescript-4.0.1.tgz#fd9d2e06a06ea3c1c15885b82ebfb037c07d75b2"
+gulp-typescript@4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/gulp-typescript/-/gulp-typescript-4.0.2.tgz#80bb9e376e7aa87b763a6ad5fe054a5d078da1e6"
   dependencies:
     ansi-colors "^1.0.1"
     plugin-error "^0.1.2"
