@@ -76,9 +76,9 @@
   version "8.5.7"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-8.5.7.tgz#9c498c35af354dcfbca3790fb2e81129e93cf0e2"
 
-"@types/node@9.6.14":
-  version "9.6.14"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-9.6.14.tgz#79b5167f822d5fb0fb2b5c92ca150391ae0f2542"
+"@types/node@9.6.15":
+  version "9.6.15"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-9.6.15.tgz#8a5a313ea0a43a95277235841be5d3f5fb3dfeda"
 
 "@types/strip-bom@^3.0.0":
   version "3.0.0"
