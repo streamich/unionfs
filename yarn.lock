@@ -1982,6 +1982,10 @@ fs-monkey@^0.3.0:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/fs-monkey/-/fs-monkey-0.3.1.tgz#69edd8420e04da04d4d3ea200da1ccdc444eecd0"
 
+fs-monkey@^0.3.3:
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/fs-monkey/-/fs-monkey-0.3.3.tgz#7960bb2b1fa2653731b9d0e2e84812a7e8b3664a"
+
 fs-readdir-recursive@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/fs-readdir-recursive/-/fs-readdir-recursive-1.0.0.tgz#8cd1745c8b4f8a29c8caec392476921ba195f560"
@@ -3674,12 +3678,12 @@ mem@^1.1.0:
   dependencies:
     mimic-fn "^1.0.0"
 
-memfs@2.8.0:
-  version "2.8.0"
-  resolved "https://registry.yarnpkg.com/memfs/-/memfs-2.8.0.tgz#a64887d6b540084be5847eb1bd3b5ac8f759c114"
+memfs@2.9.0:
+  version "2.9.0"
+  resolved "https://registry.yarnpkg.com/memfs/-/memfs-2.9.0.tgz#327fc5a7ff82ff424ca83f9dcff208eaeb20bc64"
   dependencies:
     fast-extend "0.0.2"
-    fs-monkey "^0.3.0"
+    fs-monkey "^0.3.3"
 
 memory-fs@0.4.1:
   version "0.4.1"
