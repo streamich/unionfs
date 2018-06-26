@@ -3678,9 +3678,9 @@ mem@^1.1.0:
   dependencies:
     mimic-fn "^1.0.0"
 
-memfs@2.9.0:
-  version "2.9.0"
-  resolved "https://registry.yarnpkg.com/memfs/-/memfs-2.9.0.tgz#327fc5a7ff82ff424ca83f9dcff208eaeb20bc64"
+memfs@2.9.1:
+  version "2.9.1"
+  resolved "https://registry.yarnpkg.com/memfs/-/memfs-2.9.1.tgz#3ced3bfd8dcf9765af6ab22c57d6744f56d6f2a8"
   dependencies:
     fast-extend "0.0.2"
     fs-monkey "^0.3.3"
