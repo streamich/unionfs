@@ -1,5 +1,9 @@
+import { Writable, Readable } from "stream";
+import { Stats } from "fs";
 
 export interface IFS {
+    WriteStream: typeof Writable;
+    ReadStream: typeof Readable;
     readFileSync();
     renameSync();
     ftruncateSync();
@@ -10,7 +14,7 @@ export interface IFS {
     chmodSync();
     fchmodSync();
     lchmodSync();
-    statSync();
+    statSync(path:string): Stats;
     lstatSync();
     fstatSync();
     linkSync();
@@ -33,8 +37,8 @@ export interface IFS {
     appendFileSync();
     existsSync(path): boolean;
     accessSync();
-    createReadStream();
-    createWriteStream();
+    createReadStream(path:string) : ReadableStream;
+    createWriteStream(path:string) : WritableStream;
     watchFile();
     unwatchFile();
     watch();

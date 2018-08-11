@@ -24,6 +24,59 @@ export class Union {
                     return true;
             return false;
         };
+
+        // Special case `createReadStream`
+        this['createReadStream'] = path => {
+            let lastError = null;
+            for (const fs of this.fss) {
+                try {
+                    if(!fs.createReadStream) throw Error(`Method not supported: "createReadStream"`);
+
+                    if (fs.existsSync && !fs.existsSync(path)) {
+                        throw new Error(`file "${path}" does not exists`);
+                    }
+
+                    const stream = fs.createReadStream(path);
+                    if (!stream) {
+                        throw new Error("no valid stream")
+                    }
+                    this.ReadStream = fs.ReadStream;
+
+                    return stream;
+                }
+                catch (err) {
+                    lastError = err;
+                }
+            }
+
+            throw lastError;
+        }
+
+        // Special case `createWriteStream`
+        this['createWriteStream'] = path => {
+            let lastError = null;
+            for (const fs of this.fss) {
+                try {
+                    if(!fs.createWriteStream) throw Error(`Method not supported: "createWriteStream"`);
+
+                    fs.statSync(path); //we simply stat first to exit early for mocked fs'es
+                    //TODO which filesystem to write to?
+                    const stream = fs.createWriteStream(path);
+                    if (!stream) {
+                        throw new Error("no valid stream")
+                    }
+                    this.WriteStream = fs.WriteStream;
+
+                    return stream;
+                }
+                catch (err) {
+                    lastError = err;
+                }
+            }
+
+            throw lastError;
+        }
+
     }
 
     // Add a file system to the union.
@@ -37,12 +90,11 @@ export class Union {
         for(let i = this.fss.length - 1; i >= 0; i--) {
             const fs = this.fss[i];
             try {
-                if(!fs[method]) throw Error('Method not supported: ' + method);
+                if(!fs[method]) throw Error(`Method not supported: "${method}" with args "${args}"`);
                 return fs[method].apply(fs, args);
             } catch(err) {
                 err.prev = lastError;
                 lastError = err;
-
                 if(!i) { // last one
                     throw err;
                 } else {

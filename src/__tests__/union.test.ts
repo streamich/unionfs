@@ -92,5 +92,37 @@ describe('union', () => {
                 });
             });
         });
+
+        describe("Streams", () => {
+            it("can create Readable Streams", () => {
+                const vol = Volume.fromJSON({'/foo': 'bar'});
+                const ufs = new Union as any;
+
+                ufs.use(vol).use(fs);
+
+                expect(ufs.createReadStream).toBeInstanceOf(Function);
+                expect(vol.createReadStream("/foo")).toHaveProperty("_readableState");
+                expect(fs.createReadStream(__filename)).toHaveProperty("_readableState");
+
+                expect(ufs.createReadStream("/foo")).toHaveProperty("_readableState");
+                expect(ufs.createReadStream(__filename)).toHaveProperty("_readableState");
+            });
+
+            it("can create Writable Streams", () => {
+                const vol = Volume.fromJSON({'/foo': 'bar'});
+                const ufs = new Union as any;
+                const realFile = __filename+".test"
+                ufs.use(vol).use(fs);
+
+                expect(ufs.createWriteStream).toBeInstanceOf(Function);
+                expect(vol.createWriteStream("/foo")).toHaveProperty("_writableState");
+                expect(fs.createWriteStream(realFile)).toHaveProperty("_writableState");
+
+                expect(ufs.createWriteStream("/foo")).toHaveProperty("_writableState");
+                expect(ufs.createWriteStream(realFile)).toHaveProperty("_writableState");
+
+                ufs.unlinkSync(realFile);
+            })
+        })
     });
 });
