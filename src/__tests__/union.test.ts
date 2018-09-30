@@ -1,7 +1,6 @@
 import {Union} from '..';
 import {Volume} from 'memfs/src/volume';
 import * as fs from 'fs';
-import { doesNotThrow } from 'assert';
 
 describe('union', () => {
     describe('Union', () => {

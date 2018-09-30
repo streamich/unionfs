@@ -206,10 +206,7 @@ export class Union {
             // Replace `callback` with our intermediate function.
             args[lastarg] = function(err) {
                 if(err) return iterate(i + 1, err);
-                if(cb) {
-                    console.log("calling %s: %s: %s", method, i, arguments);
-                    cb.apply(cb, arguments);
-                }
+                if(cb) cb.apply(cb, arguments);
             };
 
             const j = this.fss.length - i - 1;
