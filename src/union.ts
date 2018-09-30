@@ -25,6 +25,10 @@ export class Union {
             return false;
         };
 
+        // Special cases for methods which need to join their results
+        this['readdir'] = (...args) => this.asyncJoinMethod("readdir", args);
+        this['readdirSync'] = (...args) => this.syncJoinMethod("readdirSync", args);
+
         // Special case `createReadStream`
         this['createReadStream'] = path => {
             let lastError = null;
@@ -85,6 +89,28 @@ export class Union {
         return this;
     }
 
+    private syncJoinMethod(method: string, args: any[]) {
+        let lastError: IUnionFsError = null;
+        let result = [];
+        for(let i = this.fss.length - 1; i >= 0; i--) {
+            const fs = this.fss[i];
+            try {
+                if(!fs[method]) throw Error(`Method not supported: "${method}" with args "${args}"`);
+                result = result.concat(fs[method].apply(fs, args));
+            } catch(err) {
+                err.prev = lastError;
+                lastError = err;
+                if(!i) { // last one
+                    throw err;
+                } else {
+                    // Ignore error...
+                    // continue;
+                }
+            }
+        }
+        return result;
+    }
+
     private syncMethod(method: string, args: any[]) {
         let lastError: IUnionFsError = null;
         for(let i = this.fss.length - 1; i >= 0; i--) {
@@ -103,6 +129,57 @@ export class Union {
                 }
             }
         }
+    }
+
+    private asyncJoinMethod(method: string, args: any[]) {
+        let lastarg = args.length - 1;
+        let cb = args[lastarg];
+        if(typeof cb !== 'function') {
+            cb = null;
+            lastarg++;
+        }
+
+        let lastError: IUnionFsError = null;
+        let result: any[] | null = null;
+        const iterate = (i = 0, error?: IUnionFsError) => {
+            if(error) {
+                error.prev = lastError;
+                lastError = error;
+            }
+
+            // Already tried all file systems, return the last error.
+            if(i >= this.fss.length) { // last one
+                if(cb) {
+                    cb(error || Error('No file systems attached.'));
+                };
+                return;
+            }
+
+            // Replace `callback` with our intermediate function.
+            args[lastarg] = (err, resArg) => {
+                if(err) {
+                    return iterate(i + 1, err);
+                }
+                if(resArg) {
+                    result = result !== null ? result : [];
+                    result.push(...resArg);
+                }
+
+                if (i === this.fss.length - 1) {
+                    return cb(null, result);
+                } else {
+                    return iterate(i + 1, error);
+                }
+            };
+
+            const j = this.fss.length - i - 1;
+            const fs = this.fss[j];
+            const func = fs[method];
+
+            if(!func) iterate(i + 1, Error('Method not supported: ' + method));
+            else func.apply(fs, args);
+        };
+        iterate();
     }
 
     private asyncMethod(method: string, args: any[]) {
@@ -129,7 +206,10 @@ export class Union {
             // Replace `callback` with our intermediate function.
             args[lastarg] = function(err) {
                 if(err) return iterate(i + 1, err);
-                if(cb) cb.apply(cb, arguments);
+                if(cb) {
+                    console.log("calling %s: %s: %s", method, i, arguments);
+                    cb.apply(cb, arguments);
+                }
             };
 
             const j = this.fss.length - i - 1;
