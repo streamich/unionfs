@@ -72,7 +72,7 @@ describe('union', () => {
                     expect(ufs.readdirSync("/foo")).toEqual(["bar", "baz"]);
                 });
     
-                it('reads multiple memfs correctly', () => {
+                it('reads multiple memfs', () => {
                     const vol = Volume.fromJSON({
                         '/foo/bar': 'bar',
                         '/foo/baz': 'baz',
@@ -85,6 +85,22 @@ describe('union', () => {
                     ufs.use(vol as any);
                     ufs.use(vol2 as any);
                     expect(ufs.readdirSync("/foo")).toEqual(["qux", "bar", "baz"]);
+                });
+
+                it('reads dedupes multuple fss', () => {
+                    const vol = Volume.fromJSON({
+                        '/foo/bar': 'bar',
+                        '/foo/baz': 'baz',
+                    });
+                    const vol2 = Volume.fromJSON({
+                        '/foo/baz': 'not baz',
+                        '/foo/qux': 'baz',
+                    });
+                    
+                    const ufs = new Union();
+                    ufs.use(vol as any);
+                    ufs.use(vol2 as any);
+                    expect(ufs.readdirSync("/foo")).toEqual(["baz", "qux", "bar"]);
                 });
             });
         });

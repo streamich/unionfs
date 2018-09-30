@@ -62,7 +62,7 @@ export interface IFS {
     rmdir();
     mkdir();
     readdir(path: string, options: { encoding?: string | BufferEncoding | null } | BufferEncoding | string | null, callback: (err: NodeJS.ErrnoException, files: string[]) => void): void;
-    readdir(path: string, callback?: (err: NodeJS.ErrnoException, files: string[]) => void): void;
+    readdir(path: string, callback: (err: NodeJS.ErrnoException, files: string[]) => void): void;
     close();
     open();
     utimes();
