@@ -23,7 +23,7 @@
     "test": "jest",
     "test-watch": "jest --watch",
     "test-coverage": "jest --coverage",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
+    "release": "semantic-release"
   },
   "dependencies": {
     "fs-monkey": "^0.3.0",
@@ -41,8 +41,11 @@
     "source-map-support": "0.5.9",
     "ts-jest": "23.1.4",
     "typescript": "2.9.2",
-    "semantic-release": "15.9.16",
-    "rimraf": "^2.6.2"
+    "rimraf": "^2.6.2",
+    "semantic-release": "^15.9.16",
+    "@semantic-release/changelog": "^3.0.0",
+    "@semantic-release/npm": "^5.0.4",
+    "@semantic-release/git": "^7.0.4"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -56,5 +59,17 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": ".*/__tests__/.*\\.(test|spec)\\.(jsx?|tsx?)$"
+  },
+  "release": {
+    "verifyConditions": [
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/git"
+    ],
+    "prepare": [
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/git"
+    ]
   }
 }
