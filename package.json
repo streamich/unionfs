@@ -18,24 +18,22 @@
     "url": "https://github.com/streamich/unionfs.git"
   },
   "scripts": {
-    "build": "npm run build-ts && npm run build-js",
-    "build-ts": "./node_modules/.bin/gulp build-ts",
-    "build-js": "./node_modules/.bin/babel src --out-dir lib",
+    "clean": "rimraf lib",
+    "build": "tsc",
     "test": "jest",
     "test-watch": "jest --watch",
     "test-coverage": "jest --coverage",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "dependencies": {
-    "fs-monkey": "^0.3.0"
+    "fs-monkey": "^0.3.0",
+    "tslib": "^1.9.3"
   },
   "devDependencies": {
     "@types/jest": "23.3.2",
     "@types/node": "9.6.32",
     "babel-cli": "6.26.0",
     "babel-preset-es2015": "6.24.1",
-    "gulp": "3.9.1",
-    "gulp-typescript": "4.0.2",
     "memory-fs": "0.4.1",
     "memfs": "2.9.4",
     "jest": "23.5.0",
@@ -43,7 +41,8 @@
     "source-map-support": "0.5.9",
     "ts-jest": "23.1.4",
     "typescript": "2.9.2",
-    "semantic-release": "15.9.16"
+    "semantic-release": "15.9.16",
+    "rimraf": "^2.6.2"
   },
   "jest": {
     "moduleFileExtensions": [

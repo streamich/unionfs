@@ -57,7 +57,7 @@ export class Union {
                     }
                     if(resArg) {
                         result = result !== null ? result : new Set();
-                        
+
                         // Convert all results to Strings to make sure that they're deduped
                         for (const res of resArg) {
                             result.add(String(res));
