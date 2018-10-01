@@ -25,6 +25,86 @@ export class Union {
             return false;
         };
 
+        // special case for readdir which should union the results
+        this['readdir'] = (...args) => {
+            let lastarg = args.length - 1;
+            let cb = args[lastarg];
+            if(typeof cb !== 'function') {
+                cb = null;
+                lastarg++;
+            }
+
+            let lastError: IUnionFsError = null;
+            let result: Set<string> | null = null;
+            const iterate = (i = 0, error?: IUnionFsError) => {
+                if(error) {
+                    error.prev = lastError;
+                    lastError = error;
+                }
+
+                // Already tried all file systems, return the last error.
+                if(i >= this.fss.length) { // last one
+                    if(cb) {
+                        cb(error || Error('No file systems attached.'));
+                    };
+                    return;
+                }
+
+                // Replace `callback` with our intermediate function.
+                args[lastarg] = (err, resArg: string[] | Buffer[]) => {
+                    if(err) {
+                        return iterate(i + 1, err);
+                    }
+                    if(resArg) {
+                        result = result !== null ? result : new Set();
+                        
+                        // Convert all results to Strings to make sure that they're deduped
+                        for (const res of resArg) {
+                            result.add(String(res));
+                        }
+                    }
+
+                    if (i === this.fss.length - 1) {
+                        return cb(null, Array.from(result).sort());
+                    } else {
+                        return iterate(i + 1, error);
+                    }
+                };
+
+                const j = this.fss.length - i - 1;
+                const fs = this.fss[j];
+                const func = fs.readdir;
+
+                if(!func) iterate(i + 1, Error('Method not supported: readdir'));
+                else func.apply(fs, args);
+            };
+            iterate();
+        };
+        this['readdirSync'] = (...args) => {
+            let lastError: IUnionFsError = null;
+            let result = new Set<string>();
+            for(let i = this.fss.length - 1; i >= 0; i--) {
+                const fs = this.fss[i];
+                try {
+                    if(!fs.readdirSync) throw Error(`Method not supported: "readdirSync" with args "${args}"`);
+                    for (const res of fs.readdirSync.apply(fs, args)) {
+                        // Convert all results to Strings to make sure that they're deduped
+                        result.add(String(res));
+                    }
+                } catch(err) {
+                    err.prev = lastError;
+                    lastError = err;
+                    if(!i) { // last one
+                        throw err;
+                    } else {
+                        // Ignore error...
+                        // continue;
+                    }
+                }
+            }
+            return Array.from(result).sort();
+        };
+
         // Special case `createReadStream`
         this['createReadStream'] = path => {
             let lastError = null;
