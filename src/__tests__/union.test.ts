@@ -84,10 +84,10 @@ describe('union', () => {
                     const ufs = new Union();
                     ufs.use(vol as any);
                     ufs.use(vol2 as any);
-                    expect(ufs.readdirSync("/foo")).toEqual(["qux", "bar", "baz"]);
+                    expect(ufs.readdirSync("/foo")).toEqual(["bar", "baz", "qux"]);
                 });
 
-                it('reads dedupes multuple fss', () => {
+                it('reads dedupes multiple fss', () => {
                     const vol = Volume.fromJSON({
                         '/foo/bar': 'bar',
                         '/foo/baz': 'baz',
@@ -100,7 +100,7 @@ describe('union', () => {
                     const ufs = new Union();
                     ufs.use(vol as any);
                     ufs.use(vol2 as any);
-                    expect(ufs.readdirSync("/foo")).toEqual(["baz", "qux", "bar"]);
+                    expect(ufs.readdirSync("/foo")).toEqual(["bar", "baz", "qux"]);
                 });
             });
         });
@@ -201,7 +201,8 @@ describe('union', () => {
                     ufs.use(vol as any);
                     ufs.use(vol2 as any);
                     ufs.readdir("/foo", (err, files) => {
-                        expect(files).toEqual(["qux", "bar", "baz"]);
+                        expect(err).toBeNull();
+                        expect(files).toEqual(["bar", "baz", "qux"]);
                         done();
                     });
                 });

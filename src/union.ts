@@ -65,7 +65,7 @@ export class Union {
                     }
 
                     if (i === this.fss.length - 1) {
-                        return cb(null, Array.from(result));
+                        return cb(null, Array.from(result).sort());
                     } else {
                         return iterate(i + 1, error);
                     }
@@ -102,7 +102,7 @@ export class Union {
                     }
                 }
             }
-            return Array.from(result);
+            return Array.from(result).sort();
         };
 
         // Special case `createReadStream`
