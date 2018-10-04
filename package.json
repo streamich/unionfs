@@ -43,7 +43,7 @@
     "source-map-support": "0.5.9",
     "ts-jest": "23.1.4",
     "typescript": "2.9.2",
-    "semantic-release": "15.9.16"
+    "semantic-release": "15.9.17"
   },
   "jest": {
     "moduleFileExtensions": [
