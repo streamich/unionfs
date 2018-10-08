@@ -30,7 +30,7 @@
     "fs-monkey": "^0.3.0"
   },
   "devDependencies": {
-    "@types/jest": "23.3.3",
+    "@types/jest": "23.3.4",
     "@types/node": "9.6.34",
     "babel-cli": "6.26.0",
     "babel-preset-es2015": "6.24.1",
