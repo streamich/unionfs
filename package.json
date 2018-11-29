@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@types/jest": "23.3.10",
-    "@types/node": "9.6.39",
+    "@types/node": "9.6.40",
     "babel-cli": "6.26.0",
     "babel-preset-es2015": "6.24.1",
     "gulp": "3.9.1",
