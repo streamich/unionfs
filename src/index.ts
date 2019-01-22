@@ -25,5 +25,5 @@ export interface IUnionFs extends IFS {
 
 export const Union = _Union as any as (new () => IUnionFs);
 
-export const ufs = (new _Union) as any as IUnion;
+export const ufs = (new _Union) as any as IUnionFs;
 export default ufs;

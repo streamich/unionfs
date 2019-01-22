@@ -6,15 +6,6 @@ export interface IUnionFsError extends Error {
     prev?: IUnionFsError,
 }
 
-// special case functions
-const IGNORED_METHODS = [
-    "existsSync",
-    "readdir",
-    "readdirSync",
-    "createReadStream",
-    "createWriteStream"
-]
-
 /**
  * Union object represents a stack of filesystems
  */
@@ -27,12 +18,12 @@ export class Union {
 
     constructor() {
         for(let method of fsSyncMethods) {
-            if (IGNORED_METHODS.indexOf(method) === -1) {
+            if (!Object.prototype.hasOwnProperty.call(this, method)) { // check we don't already have a property for this method
                 this[method] = (...args) =>  this.syncMethod(method, args);
             }
         }
         for(let method of fsAsyncMethods) {
-            if (IGNORED_METHODS.indexOf(method) === -1) {
+            if (!Object.prototype.hasOwnProperty.call(this, method)) { // check we don't already have a property for this method
                 this[method] = (...args) => this.asyncMethod(method, args);
             }
         }
