@@ -6,6 +6,15 @@ export interface IUnionFsError extends Error {
     prev?: IUnionFsError,
 }
 
+const SPECIAL_METHODS = [
+    "existsSync",
+    "readdir",
+    "readdirSync",
+    "createReadStream",
+    "createWriteStream",
+    "watch",
+]
+
 /**
  * Union object represents a stack of filesystems
  */
@@ -18,21 +27,37 @@ export class Union {
 
     constructor() {
         for(let method of fsSyncMethods) {
-            if (!Object.prototype.hasOwnProperty.call(this, method)) { // check we don't already have a property for this method
+            if (SPECIAL_METHODS.indexOf(method) === -1) { // check we don't already have a property for this method
                 this[method] = (...args) =>  this.syncMethod(method, args);
             }
         }
         for(let method of fsAsyncMethods) {
-            if (!Object.prototype.hasOwnProperty.call(this, method)) { // check we don't already have a property for this method
+            if (SPECIAL_METHODS.indexOf(method) === -1) { // check we don't already have a property for this method
                 this[method] = (...args) => this.asyncMethod(method, args);
             }
         }
     }
 
+    public watch(...args) {
+        // watch the first filesystem for the file since if you're using this
+        // as an FS then you would be writing to the first layer anyway. 
+        // (you actually write to all layers, but that includes the first)
+        for (const fs of this.fss) {
+            return fs.watch.apply(fs, args);
+        }
+    }
+
     public existsSync(path: string) {
-        for (const fs of this.fss)
-            if(fs.existsSync(path))
-                return true;
+        for (const fs of this.fss) {
+            try {
+                if(fs.existsSync(path)) {
+                    return true
+                }
+            } catch (e) {
+                // ignore
+            }
+        }
+
         return false;
     };
 
