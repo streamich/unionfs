@@ -13,7 +13,33 @@ const SPECIAL_METHODS = [
     "createReadStream",
     "createWriteStream",
     "watch",
+    "watchFile"
 ]
+
+const createFSProxy = watchers => new Proxy({}, {
+    get(_obj, property) {
+        const funcCallers = [];
+        let prop;
+        for (const watcher of watchers) {
+            prop = watcher[property];
+            // if we're a function we wrap it in a bigger caller;
+            if (typeof prop === "function") {
+                funcCallers.push([ watcher, prop ]);
+            }
+        }
+
+        if (funcCallers.length) {
+            return (...args) => {
+                for (const [ watcher, func ] of funcCallers) {
+                    func.apply(watcher, args);
+                }
+            }
+        } else {
+            return prop;
+        }
+    }
+});
+
 
 /**
  * Union object represents a stack of filesystems
@@ -39,12 +65,33 @@ export class Union {
     }
 
     public watch(...args) {
-        // watch the first filesystem for the file since if you're using this
-        // as an FS then you would be writing to the first layer anyway. 
-        // (you actually write to all layers, but that includes the first)
+        const watchers = [];
         for (const fs of this.fss) {
-            return fs.watch.apply(fs, args);
+            try {
+                const watcher = fs.watch.apply(fs, args);
+                watchers.push(watcher);
+            } catch (e) {
+                // dunno what to do here...
+            }
         }
+
+        // return a proxy to call functions on these props 
+        return createFSProxy(watchers);
+    }
+
+    public watchFile(...args) {
+        const watchers = [];
+        for (const fs of this.fss) {
+            try {
+                const watcher = fs.watchFile.apply(fs, args);
+                watchers.push(watcher);
+            } catch (e) {
+                // dunno what to do here...
+            }
+        }
+
+        // return a proxy to call functions on these props 
+        return createFSProxy(watchers);
     }
 
     public existsSync(path: string) {
