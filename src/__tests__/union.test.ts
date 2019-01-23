@@ -57,7 +57,6 @@ describe('union', () => {
                     
                     ufs.writeFileSync("/tmp/foo.js", writtenContent);
 
-                    // TODO: why is this twice? 
                     expect(mockCallback).toBeCalledTimes(2);
 
                     expect(mockCallback).toBeCalledWith('change', '/tmp/foo.js');

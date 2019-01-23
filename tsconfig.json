@@ -9,7 +9,8 @@
     "module": "commonjs",
     "removeComments": false,
     "noImplicitAny": false,
-    "sourceMap": false
+    "sourceMap": false,
+    "downlevelIteration": true
   },
   "exclude": [
     "node_modules",

@@ -6,7 +6,7 @@ export interface IUnionFsError extends Error {
     prev?: IUnionFsError,
 }
 
-const SPECIAL_METHODS = [
+const SPECIAL_METHODS = new Set([
     "existsSync",
     "readdir",
     "readdirSync",
@@ -14,7 +14,7 @@ const SPECIAL_METHODS = [
     "createWriteStream",
     "watch",
     "watchFile"
-]
+]);
 
 const createFSProxy = watchers => new Proxy({}, {
     get(_obj, property) {
@@ -53,14 +53,20 @@ export class Union {
 
     constructor() {
         for(let method of fsSyncMethods) {
-            if (SPECIAL_METHODS.indexOf(method) === -1) { // check we don't already have a property for this method
+            if (SPECIAL_METHODS.has(method)) { // check we don't already have a property for this method
                 this[method] = (...args) =>  this.syncMethod(method, args);
             }
         }
         for(let method of fsAsyncMethods) {
-            if (SPECIAL_METHODS.indexOf(method) === -1) { // check we don't already have a property for this method
+            if (SPECIAL_METHODS.has(method)) { // check we don't already have a property for this method
                 this[method] = (...args) => this.asyncMethod(method, args);
             }
+        }
+
+        for (let method of SPECIAL_METHODS.values()) {
+            // bind special methods to support 
+            // const { method } = ufs;
+            this[method] = this[method].bind(this);
         }
     }
 
