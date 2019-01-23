@@ -13,7 +13,8 @@ const SPECIAL_METHODS = new Set([
     "createReadStream",
     "createWriteStream",
     "watch",
-    "watchFile"
+    "watchFile",
+    "unwatchFile"
 ]);
 
 const createFSProxy = watchers => new Proxy({}, {
@@ -68,6 +69,10 @@ export class Union {
             // const { method } = ufs;
             this[method] = this[method].bind(this);
         }
+    }
+
+    public unwatchFile(...args) {
+        throw new Error("unwatchFile is not supported, please use watchFile");
     }
 
     public watch(...args) {
