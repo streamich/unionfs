@@ -54,12 +54,12 @@ export class Union {
 
     constructor() {
         for(let method of fsSyncMethods) {
-            if (SPECIAL_METHODS.has(method)) { // check we don't already have a property for this method
+            if (!SPECIAL_METHODS.has(method)) { // check we don't already have a property for this method
                 this[method] = (...args) =>  this.syncMethod(method, args);
             }
         }
         for(let method of fsAsyncMethods) {
-            if (SPECIAL_METHODS.has(method)) { // check we don't already have a property for this method
+            if (!SPECIAL_METHODS.has(method)) { // check we don't already have a property for this method
                 this[method] = (...args) => this.asyncMethod(method, args);
             }
         }
