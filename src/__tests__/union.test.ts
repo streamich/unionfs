@@ -47,6 +47,22 @@ describe('union', () => {
                 }
             });
 
+            describe("watch()", () => {
+                it("should create a watcher", () => {
+                    const ufs = new Union().use(Volume.fromJSON({"foo.js": "hello test"}, "/tmp") as any) as any;
+
+                    const mockCallback = jest.fn();
+                    const writtenContent  = "hello world";
+                    ufs.watch("/tmp/foo.js", mockCallback);
+                    
+                    ufs.writeFileSync("/tmp/foo.js", writtenContent);
+
+                    expect(mockCallback).toBeCalledTimes(2);
+
+                    expect(mockCallback).toBeCalledWith('change', '/tmp/foo.js');
+                })
+            })
+
             describe('existsSync()', () => {
                 it('finds file on real file system', () => {
                     const ufs = new Union;

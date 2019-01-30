@@ -41,7 +41,7 @@ export interface IFS {
     createWriteStream(path:string) : WritableStream;
     watchFile();
     unwatchFile();
-    watch();
+    watch(...args): any;
     rename();
     ftruncate();
     truncate();
