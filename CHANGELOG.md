@@ -1,3 +1,10 @@
+# [4.1.0](https://github.com/streamich/unionfs.git/compare/v4.0.0...v4.1.0) (2019-03-01)
+
+
+### Features
+
+* improve typings ([75a5d69](https://github.com/streamich/unionfs.git/commit/75a5d69))
+
 # [4.0.0](https://github.com/streamich/unionfs.git/compare/v3.0.2...v4.0.0) (2019-01-30)
 
 
