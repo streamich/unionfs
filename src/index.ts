@@ -12,13 +12,6 @@ export type TEncoding = 'ascii' | 'utf8' | 'utf16le' | 'ucs2' | 'base64' | 'lati
 export type TEncodingExtended = TEncoding | 'buffer';
 export type TTime = number | string | Date;
 
-
-export interface IUnion {
-    use(fs: IFS): this;
-
-    readFileSync(path: TFilePath, options?: object | TEncoding);
-}
-
 export interface IUnionFs extends IFS {
     use(fs: IFS): this;
 }

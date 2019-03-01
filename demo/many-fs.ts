@@ -13,7 +13,7 @@ memoryFs.writeFileSync('/memory-fs', '3');
 
 
 ufs
-    .use(fs as any)
+    .use(fs)
     .use(vol1)
     .use(vol2)
     .use(memoryFs);

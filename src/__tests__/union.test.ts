@@ -1,5 +1,5 @@
 import {Union} from '..';
-import {Volume} from 'memfs/src/volume';
+import {Volume} from 'memfs';
 import * as fs from 'fs';
 
 describe('union', () => {
@@ -7,7 +7,7 @@ describe('union', () => {
         describe('sync methods', () => {
             it('Basic one file system', () => {
                 const vol = Volume.fromJSON({'/foo': 'bar'});
-                const ufs = new Union as any;
+                const ufs = new Union();
                 ufs.use(vol);
                 expect(ufs.readFileSync('/foo', 'utf8')).toBe('bar');
             });
@@ -15,7 +15,7 @@ describe('union', () => {
             it('basic two filesystems', () => {
                 const vol = Volume.fromJSON({'/foo': 'bar'});
                 const vol2 = Volume.fromJSON({'/foo': 'baz'});
-                const ufs = new Union as any;
+                const ufs = new Union();
                 ufs.use(vol);
                 ufs.use(vol2);
 
@@ -24,7 +24,7 @@ describe('union', () => {
 
             it('File not found', () => {
                 const vol = Volume.fromJSON({'/foo': 'bar'});
-                const ufs = new Union as any;
+                const ufs = new Union();
                 ufs.use(vol);
                 try {
                     ufs.readFileSync('/not-found', 'utf8');
@@ -36,7 +36,7 @@ describe('union', () => {
 
             it('Method does not exist', () => {
                 const vol = Volume.fromJSON({'/foo': 'bar'});
-                const ufs = new Union as any;
+                const ufs = new Union();
                 vol.readFileSync = undefined;
                 ufs.use(vol);
                 try {
@@ -49,7 +49,7 @@ describe('union', () => {
 
             describe("watch()", () => {
                 it("should create a watcher", () => {
-                    const ufs = new Union().use(Volume.fromJSON({"foo.js": "hello test"}, "/tmp") as any) as any;
+                    const ufs = new Union().use(Volume.fromJSON({"foo.js": "hello test"}, "/tmp"));
 
                     const mockCallback = jest.fn();
                     const writtenContent  = "hello world";
@@ -68,8 +68,8 @@ describe('union', () => {
                     const ufs = new Union;
 
                     ufs
-                        .use(fs as any)
-                        .use(Volume.fromJSON({"foo.js": ""}, "/tmp") as any)
+                        .use(fs)
+                        .use(Volume.fromJSON({"foo.js": ""}, "/tmp"))
 
                     expect(ufs.existsSync(__filename)).toBe(true);
                     expect(fs.existsSync(__filename)).toBe(true);
@@ -84,7 +84,7 @@ describe('union', () => {
                         '/foo/baz': 'baz',
                     });
                     const ufs = new Union();
-                    ufs.use(vol as any);
+                    ufs.use(vol);
                     expect(ufs.readdirSync("/foo")).toEqual(["bar", "baz"]);
                 });
     
@@ -98,8 +98,8 @@ describe('union', () => {
                     });
                     
                     const ufs = new Union();
-                    ufs.use(vol as any);
-                    ufs.use(vol2 as any);
+                    ufs.use(vol);
+                    ufs.use(vol2);
                     expect(ufs.readdirSync("/foo")).toEqual(["bar", "baz", "qux"]);
                 });
 
@@ -114,8 +114,8 @@ describe('union', () => {
                     });
                     
                     const ufs = new Union();
-                    ufs.use(vol as any);
-                    ufs.use(vol2 as any);
+                    ufs.use(vol);
+                    ufs.use(vol2);
                     expect(ufs.readdirSync("/foo")).toEqual(["bar", "baz", "qux"]);
                 });
             });
@@ -123,7 +123,7 @@ describe('union', () => {
         describe('async methods', () => {
             it('Basic one file system', done => {
                 const vol = Volume.fromJSON({'/foo': 'bar'});
-                const ufs = new Union as any;
+                const ufs = new Union();
                 ufs.use(vol);
                 ufs.readFile('/foo', 'utf8', (err, data) => {
                     expect(err).toBe(null);
@@ -134,7 +134,7 @@ describe('union', () => {
             it('basic two filesystems', () => {
                 const vol = Volume.fromJSON({'/foo': 'bar'});
                 const vol2 = Volume.fromJSON({'/foo': 'baz'});
-                const ufs = new Union as any;
+                const ufs = new Union();
                 ufs.use(vol);
                 ufs.use(vol2);
                 ufs.readFile('/foo', 'utf8', (err, content) => {
@@ -143,7 +143,7 @@ describe('union', () => {
             });
             it('File not found', done => {
                 const vol = Volume.fromJSON({'/foo': 'bar'});
-                const ufs = new Union as any;
+                const ufs = new Union();
                 ufs.use(vol);
                 ufs.readFile('/not-found', 'utf8', (err, data) => {
                     expect(err.code).toBe('ENOENT');
@@ -153,18 +153,19 @@ describe('union', () => {
 
             it('No callback provided', () => {
                 const vol = Volume.fromJSON({'/foo': 'bar'});
-                const ufs = new Union as any;
+                const ufs = new Union();
                 ufs.use(vol);
                 try {
-                    ufs.stat('/foo2', 'utf8');
+                    // must be an apply so TypeScript doens't compile
+                    ufs.stat.apply(ufs, '/foo2');
                 } catch(err) {
                     expect(err).toBeInstanceOf(TypeError);
                 }
             });
 
             it('No file systems attached', done => {
-                const ufs = new Union as any;
-                ufs.stat('/foo2', 'utf8', (err, data) => {
+                const ufs = new Union();
+                ufs.stat('/foo2', (err, data) => {
                     expect(err.message).toBe('No file systems attached.');
                     done();
                 });
@@ -178,9 +179,9 @@ describe('union', () => {
                     '/foo/bar': 'baz',
                 });
                 
-                const ufs = new Union() as any;
-                ufs.use(vol as any);
-                ufs.use(vol2 as any);
+                const ufs = new Union();
+                ufs.use(vol);
+                ufs.use(vol2);
 
                 const mockCallback = jest.fn();
                 ufs.readFile("/foo/bar", "utf8", () => {
@@ -198,7 +199,7 @@ describe('union', () => {
                         '/foo/baz': 'baz',
                     });
                     const ufs = new Union();
-                    ufs.use(vol as any);
+                    ufs.use(vol);
                     ufs.readdir("/foo", (err, files) => {
                         expect(files).toEqual(["bar", "baz"]);
                     });
@@ -214,8 +215,8 @@ describe('union', () => {
                     });
                     
                     const ufs = new Union();
-                    ufs.use(vol as any);
-                    ufs.use(vol2 as any);
+                    ufs.use(vol);
+                    ufs.use(vol2);
                     ufs.readdir("/foo", (err, files) => {
                         expect(err).toBeNull();
                         expect(files).toEqual(["bar", "baz", "qux"]);
@@ -228,7 +229,7 @@ describe('union', () => {
         describe("Streams", () => {
             it("can create Readable Streams", () => {
                 const vol = Volume.fromJSON({'/foo': 'bar'});
-                const ufs = new Union as any;
+                const ufs = new Union();
 
                 ufs.use(vol).use(fs);
 
@@ -242,7 +243,7 @@ describe('union', () => {
 
             it("can create Writable Streams", () => {
                 const vol = Volume.fromJSON({'/foo': 'bar'});
-                const ufs = new Union as any;
+                const ufs = new Union();
                 const realFile = __filename+".test"
                 ufs.use(vol).use(fs);
 
