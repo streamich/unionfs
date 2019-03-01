@@ -1,78 +1,82 @@
 import { Writable, Readable } from "stream";
-import { Stats } from "fs";
+import * as fs from "fs";
 
-export interface IFS {
+type FSMethods =
+    | "readFileSync"
+    | "renameSync"
+    | "ftruncateSync"
+    | "truncateSync"
+    | "chownSync"
+    | "fchownSync"
+    | "lchownSync"
+    | "chmodSync"
+    | "fchmodSync"
+    | "lchmodSync"
+    | "statSync"
+    | "lstatSync"
+    | "fstatSync"
+    | "linkSync"
+    | "symlinkSync"
+    | "readlinkSync"
+    | "realpathSync"
+    | "unlinkSync"
+    | "rmdirSync"
+    | "mkdirSync"
+    | "readdirSync"
+    | "closeSync"
+    | "openSync"
+    | "utimesSync"
+    | "futimesSync"
+    | "fsyncSync"
+    | "writeSync"
+    | "readSync"
+    | "readFileSync"
+    | "writeFileSync"
+    | "appendFileSync"
+    | "existsSync"
+    | "accessSync"
+    | "createReadStream"
+    | "createWriteStream"
+    | "watchFile"
+    | "unwatchFile"
+    | "watch"
+    | "rename"
+    | "ftruncate"
+    | "truncate"
+    | "chown"
+    | "fchown"
+    | "lchown"
+    | "chmod"
+    | "fchmod"
+    | "lchmod"
+    | "stat"
+    | "lstat"
+    | "fstat"
+    | "link"
+    | "symlink"
+    | "readlink"
+    | "realpath"
+    | "unlink"
+    | "rmdir"
+    | "mkdir"
+    | "readdir"
+    | "readdir"
+    | "close"
+    | "open"
+    | "utimes"
+    | "futimes"
+    | "fsync"
+    | "write"
+    | "read"
+    | "readFile"
+    | "writeFile"
+    | "appendFile"
+    | "exists"
+    | "access";
+
+type FS = Pick<typeof fs, FSMethods>
+
+export interface IFS extends FS {
     WriteStream: typeof Writable;
     ReadStream: typeof Readable;
-    readFileSync();
-    renameSync();
-    ftruncateSync();
-    truncateSync();
-    chownSync();
-    fchownSync();
-    lchownSync();
-    chmodSync();
-    fchmodSync();
-    lchmodSync();
-    statSync(path:string): Stats;
-    lstatSync();
-    fstatSync();
-    linkSync();
-    symlinkSync();
-    readlinkSync();
-    realpathSync();
-    unlinkSync();
-    rmdirSync();
-    mkdirSync();
-    readdirSync(path: string, options?: { encoding?: string | BufferEncoding | null } | BufferEncoding | string | null): string[];
-    closeSync();
-    openSync();
-    utimesSync();
-    futimesSync();
-    fsyncSync();
-    writeSync();
-    readSync();
-    readFileSync();
-    writeFileSync();
-    appendFileSync();
-    existsSync(path): boolean;
-    accessSync();
-    createReadStream(path:string) : ReadableStream;
-    createWriteStream(path:string) : WritableStream;
-    watchFile();
-    unwatchFile();
-    watch(...args): any;
-    rename();
-    ftruncate();
-    truncate();
-    chown();
-    fchown();
-    lchown();
-    chmod();
-    fchmod();
-    lchmod();
-    stat();
-    lstat();
-    fstat();
-    link();
-    symlink();
-    readlink();
-    realpath();
-    unlink();
-    rmdir();
-    mkdir();
-    readdir(path: string, options: { encoding?: string | BufferEncoding | null } | BufferEncoding | string | null, callback: (err: NodeJS.ErrnoException, files: string[]) => void): void;
-    readdir(path: string, callback: (err: NodeJS.ErrnoException, files: string[]) => void): void;
-    close();
-    open();
-    utimes();
-    futimes();
-    fsync();
-    write();
-    read();
-    readFile();
-    writeFile();
-    appendFile();
-    exists();
-    access();
 }

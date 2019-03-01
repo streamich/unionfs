@@ -1,13 +1,11 @@
-import {Union} from '../src/union';
-import {Volume} from '../../memfs/src/volume';
+import {Union} from '../src';
+import {Volume} from 'memfs';
 import * as fs from 'fs';
 const {patchRequire} = require('fs-monkey');
 
 
 const vol = Volume.fromJSON({[__dirname + '/fake.js']: 'console.log("owned");'});
-const ufs = new Union as any;
-
-ufs
+const ufs = new Union()
     .use(vol)
     .use(fs);
 

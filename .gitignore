@@ -5,3 +5,5 @@ node_modules
 coverage
 package-lock.json
 /lib/
+/demo/**/*.js
+/src/**/*.js

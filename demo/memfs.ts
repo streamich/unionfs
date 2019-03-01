@@ -1,7 +1,6 @@
-import {Union} from '../src/union';
-import {Volume} from '../../memfs/src/volume';
+import {Union} from '../src';
+import {Volume} from 'memfs';
 import * as fs from 'fs';
-import {IFS} from "../src/fs";
 
 const vol1 = Volume.fromJSON({
     '/readme': 'hello',
@@ -11,9 +10,7 @@ const vol2 = Volume.fromJSON({
     '/dir/test/index.js': 'require("mocha")',
 });
 
-const ufs = new Union as any;
-
-ufs
+const ufs = new Union()
     .use(vol1)
     .use(vol2)
     .use(fs);
