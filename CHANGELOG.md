@@ -1,3 +1,15 @@
+# [4.2.0](https://github.com/streamich/unionfs/compare/v4.1.0...v4.2.0) (2019-03-02)
+
+
+### Bug Fixes
+
+* 🐛 bind methods ([b23f09c](https://github.com/streamich/unionfs/commit/b23f09c))
+
+
+### Features
+
+* 🎸 upgrade dependecies ([91635f8](https://github.com/streamich/unionfs/commit/91635f8))
+
 # [4.1.0](https://github.com/streamich/unionfs.git/compare/v4.0.0...v4.1.0) (2019-03-01)
 
 
