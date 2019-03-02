@@ -27,26 +27,26 @@
     "semantic-release": "semantic-release"
   },
   "dependencies": {
-    "fs-monkey": "^0.3.0"
+    "fs-monkey": "^0.3.3"
   },
   "devDependencies": {
-    "@types/jest": "23.3.14",
-    "@types/node": "9.6.44",
+    "@semantic-release/changelog": "3.0.2",
+    "@semantic-release/git": "7.0.8",
+    "@semantic-release/npm": "5.1.4",
+    "@types/jest": "24.0.9",
+    "@types/node": "11.10.4",
     "babel-cli": "6.26.0",
     "babel-preset-es2015": "6.24.1",
-    "gulp": "3.9.1",
-    "gulp-typescript": "4.0.2",
+    "gulp": "4.0.0",
+    "gulp-typescript": "5.0.0",
+    "jest": "24.1.0",
+    "memfs": "2.15.2",
     "memory-fs": "0.4.1",
-    "memfs": "2.9.4",
-    "jest": "23.5.0",
-    "ts-node": "7.0.1",
-    "source-map-support": "0.5.10",
-    "ts-jest": "23.1.4",
-    "typescript": "2.9.2",
     "semantic-release": "15.13.3",
-    "@semantic-release/changelog": "3.0.2",
-    "@semantic-release/npm": "5.1.4",
-    "@semantic-release/git": "7.0.8"
+    "source-map-support": "0.5.10",
+    "ts-jest": "24.0.0",
+    "ts-node": "8.0.2",
+    "typescript": "3.3.3333"
   },
   "jest": {
     "moduleFileExtensions": [

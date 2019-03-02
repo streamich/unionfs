@@ -10,6 +10,7 @@ gulp.task('build-ts', function () {
             "removeComments": false,
             "noImplicitAny": false,
             "sourceMap": false,
+            "downlevelIteration": true,
         }))
         .pipe(gulp.dest('lib'));
 });
