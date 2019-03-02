@@ -65,17 +65,17 @@ export class Union {
         }
 
         for (let method of SPECIAL_METHODS.values()) {
-            // bind special methods to support 
+            // bind special methods to support
             // const { method } = ufs;
             this[method] = this[method].bind(this);
         }
     }
 
-    public unwatchFile(...args) {
+    public unwatchFile = (...args) => {
         throw new Error("unwatchFile is not supported, please use watchFile");
     }
 
-    public watch(...args) {
+    public watch = (...args) => {
         const watchers = [];
         for (const fs of this.fss) {
             try {
@@ -86,11 +86,11 @@ export class Union {
             }
         }
 
-        // return a proxy to call functions on these props 
+        // return a proxy to call functions on these props
         return createFSProxy(watchers);
     }
 
-    public watchFile(...args) {
+    public watchFile = (...args) => {
         const watchers = [];
         for (const fs of this.fss) {
             try {
@@ -101,11 +101,11 @@ export class Union {
             }
         }
 
-        // return a proxy to call functions on these props 
+        // return a proxy to call functions on these props
         return createFSProxy(watchers);
     }
 
-    public existsSync(path: string) {
+    public existsSync = (path: string) => {
         for (const fs of this.fss) {
             try {
                 if(fs.existsSync(path)) {
@@ -119,7 +119,7 @@ export class Union {
         return false;
     };
 
-    public readdir(...args) {
+    public readdir = (...args) => {
         let lastarg = args.length - 1;
         let cb = args[lastarg];
         if(typeof cb !== 'function') {
@@ -150,7 +150,7 @@ export class Union {
                 }
                 if(resArg) {
                     result = result !== null ? result : new Set();
-                    
+
                     // Convert all results to Strings to make sure that they're deduped
                     for (const res of resArg) {
                         result.add(String(res));
@@ -174,7 +174,7 @@ export class Union {
         iterate();
     };
 
-    public readdirSync(...args) {
+    public readdirSync = (...args) => {
         let lastError: IUnionFsError = null;
         let result = new Set<string>();
         for(let i = this.fss.length - 1; i >= 0; i--) {
@@ -199,7 +199,7 @@ export class Union {
         return Array.from(result).sort();
     };
 
-    public createReadStream(path: string) {
+    public createReadStream = (path: string) => {
         let lastError = null;
         for (const fs of this.fss) {
             try {
@@ -225,7 +225,7 @@ export class Union {
         throw lastError;
     }
 
-    public createWriteStream(path: string) {
+    public createWriteStream = (path: string) => {
         let lastError = null;
         for (const fs of this.fss) {
             try {
@@ -251,9 +251,9 @@ export class Union {
 
     /**
      * Adds a filesystem to the list of filesystems in the union
-     * The new filesystem object is added as the last filesystem used 
-     * when searching for a file. 
-     * 
+     * The new filesystem object is added as the last filesystem used
+     * when searching for a file.
+     *
      * @param fs the filesystem interface to be added to the queue of FS's
      * @returns this instance of a unionFS
      */
