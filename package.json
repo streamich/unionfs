@@ -37,7 +37,7 @@
     "@types/node": "11.13.10",
     "babel-cli": "6.26.0",
     "babel-preset-es2015": "6.24.1",
-    "gulp": "4.0.1",
+    "gulp": "4.0.2",
     "gulp-typescript": "5.0.1",
     "jest": "24.8.0",
     "memfs": "2.15.2",
