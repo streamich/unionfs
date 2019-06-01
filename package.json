@@ -40,7 +40,7 @@
     "gulp": "4.0.2",
     "gulp-typescript": "5.0.1",
     "jest": "24.8.0",
-    "memfs": "2.15.2",
+    "memfs": "2.15.4",
     "memory-fs": "0.4.1",
     "semantic-release": "15.13.12",
     "source-map-support": "0.5.12",
