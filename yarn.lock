@@ -583,10 +583,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.0.10.tgz#51babf9c7deadd5343620055fc8aff7995c8b031"
   integrity sha512-LcsGbPomWsad6wmMNv7nBLw7YYYyfdYcz6xryKYQhx89c3XXan+8Q6AJ43G5XDIaklaVkK3mE4fCb0SBvMiPSQ==
 
-"@types/node@11.13.21":
-  version "11.13.21"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-11.13.21.tgz#afcf913437eeb1f9e1994a62a03b1762ee4600d3"
-  integrity sha512-fLwcSjMmDnjfk4FP7/QDiNzXSCEOGNvEe9eA6vaITmC784+Gm70wF7woaFQxUb2CpMjgLBhSPyhH0oIe1JS2uw==
+"@types/node@11.13.22":
+  version "11.13.22"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-11.13.22.tgz#91ee88ebfa25072433497f6f3150f84fa8c3a91b"
+  integrity sha512-rOsaPRUGTOXbRBOKToy4cgZXY4Y+QSVhxcLwdEveozbk7yuudhWMpxxcaXqYizLMP3VY7OcWCFtx9lGFh5j5kg==
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.0"
