@@ -41,7 +41,7 @@
     "gulp-typescript": "5.0.1",
     "jest": "24.9.0",
     "memfs": "2.15.5",
-    "memory-fs": "0.4.1",
+    "memory-fs": "0.5.0",
     "semantic-release": "15.13.24",
     "source-map-support": "0.5.13",
     "ts-jest": "24.1.0",
