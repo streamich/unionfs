@@ -118,6 +118,32 @@ describe('union', () => {
                     ufs.use(vol2 as any);
                     expect(ufs.readdirSync("/foo")).toEqual(["bar", "baz", "qux"]);
                 });
+
+                it("reads other fss when one fails", () => {
+                    const vol = Volume.fromJSON({
+                      "/foo/bar": "bar",
+                      "/foo/baz": "baz"
+                    });
+                    const vol2 = Volume.fromJSON({
+                      "/bar/baz": "not baz",
+                      "/bar/qux": "baz"
+                    });
+          
+                    const ufs = new Union();
+                    ufs.use(vol as any);
+                    ufs.use(vol2 as any);
+                    expect(ufs.readdirSync("/bar")).toEqual(["baz", "qux"]);
+                });
+        
+                it("throws error when all fss fail", () => {
+                    const vol = Volume.fromJSON({});
+                    const vol2 = Volume.fromJSON({});
+            
+                    const ufs = new Union();
+                    ufs.use(vol as any);
+                    ufs.use(vol2 as any);
+                    expect(() => ufs.readdirSync("/bar")).toThrow();
+                });
             });
         });
         describe('async methods', () => {

@@ -188,7 +188,7 @@ export class Union {
             } catch(err) {
                 err.prev = lastError;
                 lastError = err;
-                if(!i) { // last one
+                if(result.size === 0 && !i) { // last one
                     throw err;
                 } else {
                     // Ignore error...
