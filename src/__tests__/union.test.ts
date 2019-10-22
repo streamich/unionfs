@@ -223,6 +223,39 @@ describe('union', () => {
                         done();
                     });
                 });
+
+                it("reads other fss when one fails", done => {
+                    const vol = Volume.fromJSON({
+                        "/foo/bar": "bar",
+                        "/foo/baz": "baz"
+                    });
+                    const vol2 = Volume.fromJSON({
+                        "/bar/baz": "not baz",
+                        "/bar/qux": "baz"
+                    });
+          
+                    const ufs = new Union();
+                    ufs.use(vol as any);
+                    ufs.use(vol2 as any);
+                    ufs.readdir("/bar", (err, files) => {
+                        expect(err).toBeNull();
+                        expect(files).toEqual(["baz", "qux"]);
+                        done();
+                    });
+                });
+          
+                it("throws error when all fss fail", done => {
+                    const vol = Volume.fromJSON({});
+                    const vol2 = Volume.fromJSON({});
+          
+                    const ufs = new Union();
+                    ufs.use(vol as any);
+                    ufs.use(vol2 as any);
+                    ufs.readdir("/bar", (err, files) => {
+                        expect(err).not.toBeNull();
+                        done();
+                    });
+                });
             });
         });
 
