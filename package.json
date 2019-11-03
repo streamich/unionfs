@@ -32,7 +32,7 @@
   "devDependencies": {
     "@semantic-release/changelog": "3.0.5",
     "@semantic-release/git": "7.0.17",
-    "@semantic-release/npm": "5.3.3",
+    "@semantic-release/npm": "5.3.4",
     "@types/jest": "24.0.21",
     "@types/node": "11.15.2",
     "babel-cli": "6.26.0",
