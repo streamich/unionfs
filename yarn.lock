@@ -3066,10 +3066,10 @@ fast-deep-equal@^2.0.1:
   resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-2.0.1.tgz#7b05218ddf9667bf7f370bf7fdb2cb15fdd0aa49"
   integrity sha1-ewUhjd+WZ79/Nwv3/bLLFf3Qqkk=
 
-fast-extend@0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/fast-extend/-/fast-extend-0.0.2.tgz#f5ec42cf40b9460f521a6387dfb52deeed671dbd"
-  integrity sha1-9exCz0C5Rg9SGmOH37Ut7u1nHb0=
+fast-extend@1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/fast-extend/-/fast-extend-1.0.2.tgz#3b8a5b09cbc8ff3d6d47eaf397398c0a643e441b"
+  integrity sha512-XXA9RmlPatkFKUzqVZAFth18R4Wo+Xug/S+C7YlYA3xrXwfPlW3dqNwOb4hvQo7wZJ2cNDYhrYuPzVOfHy5/uQ==
 
 fast-glob@^2.2.6:
   version "2.2.6"
@@ -3347,7 +3347,7 @@ fs-mkdirp-stream@^1.0.0:
     graceful-fs "^4.1.11"
     through2 "^2.0.3"
 
-fs-monkey@^0.3.3:
+fs-monkey@0.3.3, fs-monkey@^0.3.3:
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/fs-monkey/-/fs-monkey-0.3.3.tgz#7960bb2b1fa2653731b9d0e2e84812a7e8b3664a"
   integrity sha512-FNUvuTAJ3CqCQb5ELn+qCbGR/Zllhf2HtwsdAtBi59s1WeCjKMT81fHcSu7dwIskqGVK+MmOrb7VOBlq3/SItw==
@@ -5668,13 +5668,13 @@ mem@^1.1.0:
   dependencies:
     mimic-fn "^1.0.0"
 
-memfs@3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/memfs/-/memfs-3.0.0.tgz#51197997f479c725e58f66a54280e1e4dfe9c94b"
-  integrity sha512-GmCjl40ke3OSSbwet/VQtoq320gIavoO8bMCe4NDbxuLEFV3Cj47+2I1wnv8af3a6JErJIn7Q6/5GUTiPEysaw==
+memfs@3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/memfs/-/memfs-3.0.1.tgz#efd259d5ff448a7c0678198d43cee0d1f60b74e1"
+  integrity sha512-v8MPoino1vfmwl2LDbFAg5tgPd7EPvKLvcSkx/CDJGB3JCGyHZSasRtC63wmM+iHFXh4cooYCu+cWCd1dqh2+A==
   dependencies:
-    fast-extend "0.0.2"
-    fs-monkey "^0.3.3"
+    fast-extend "1.0.2"
+    fs-monkey "0.3.3"
 
 memory-fs@0.5.0:
   version "0.5.0"
