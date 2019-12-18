@@ -122,6 +122,7 @@ export class Union {
     public readdir = (...args) => {
         let lastarg = args.length - 1;
         let cb = args[lastarg];
+        let errCount = 0;
         if(typeof cb !== 'function') {
             cb = null;
             lastarg++;
@@ -145,7 +146,9 @@ export class Union {
 
             // Replace `callback` with our intermediate function.
             args[lastarg] = (err, resArg: string[] | Buffer[]) => {
-                if(err) {
+                const count = i + 1;
+                if(err && (count < this.fss.length || !result)) {
+
                     return iterate(i + 1, err);
                 }
                 if(resArg) {
@@ -160,6 +163,7 @@ export class Union {
                 if (i === this.fss.length - 1) {
                     return cb(null, Array.from(result).sort());
                 } else {
+                    if(error) errCount++;
                     return iterate(i + 1, error);
                 }
             };
@@ -177,6 +181,7 @@ export class Union {
     public readdirSync = (...args) => {
         let lastError: IUnionFsError = null;
         let result = new Set<string>();
+        let errCount = 0;
         for(let i = this.fss.length - 1; i >= 0; i--) {
             const fs = this.fss[i];
             try {
@@ -188,7 +193,8 @@ export class Union {
             } catch(err) {
                 err.prev = lastError;
                 lastError = err;
-                if(!i) { // last one
+                errCount++;
+                if(!i && errCount === this.fss.length) { // last one
                     throw err;
                 } else {
                     // Ignore error...
