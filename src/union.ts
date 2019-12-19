@@ -128,7 +128,7 @@ export class Union {
         }
 
         let lastError: IUnionFsError = null;
-        let result: Set<string> | null = null;
+        let result: Set<string> = new Set();
         const iterate = (i = 0, error?: IUnionFsError) => {
             if(error) {
                 error.prev = lastError;
@@ -145,12 +145,10 @@ export class Union {
 
             // Replace `callback` with our intermediate function.
             args[lastarg] = (err, resArg: string[] | Buffer[]) => {
-                if(err) {
+                if(result.size === 0 && err) {
                     return iterate(i + 1, err);
                 }
                 if(resArg) {
-                    result = result !== null ? result : new Set();
-
                     // Convert all results to Strings to make sure that they're deduped
                     for (const res of resArg) {
                         result.add(String(res));
