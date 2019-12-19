@@ -1,3 +1,11 @@
+## [4.2.1](https://github.com/streamich/unionfs/compare/v4.2.0...v4.2.1) (2019-12-19)
+
+
+### Bug Fixes
+
+* **readdir:** 🐛  Error no such file or directory ([8d21e9a](https://github.com/streamich/unionfs/commit/8d21e9a6b38fbd818227cb19806142ffaca1eca9))
+* **readdirSync:** 🐛  Error no such file or directory ([b6c5764](https://github.com/streamich/unionfs/commit/b6c5764cb17b94184070d0c4acaac35c3292e365)), closes [#240](https://github.com/streamich/unionfs/issues/240)
+
 # [4.2.0](https://github.com/streamich/unionfs/compare/v4.1.0...v4.2.0) (2019-03-02)
 
 
