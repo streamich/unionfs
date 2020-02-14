@@ -11,6 +11,7 @@
     "noImplicitAny": false,
     "sourceMap": false,
     "strictNullChecks": true,
+    "strictBindCallApply": true,
     "downlevelIteration": true
   },
   "exclude": [

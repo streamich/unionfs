@@ -182,8 +182,7 @@ describe('union', () => {
                 const ufs = new Union();
                 ufs.use(vol as any);
                 try {
-                    // must be an apply so TypeScript doens't compile
-                    ufs.stat.apply(ufs, '/foo2');
+                    ufs.stat('/foo2', undefined as any);
                 } catch(err) {
                     expect(err).toBeInstanceOf(TypeError);
                 }
