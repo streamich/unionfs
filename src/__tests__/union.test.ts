@@ -37,7 +37,7 @@ describe('union', () => {
             it('Method does not exist', () => {
                 const vol = Volume.fromJSON({'/foo': 'bar'});
                 const ufs = new Union();
-                vol.readFileSync = undefined;
+                vol.readFileSync = undefined as any;
                 ufs.use(vol as any);
                 try {
                     ufs.readFileSync('/foo', 'utf8');
@@ -172,7 +172,7 @@ describe('union', () => {
                 const ufs = new Union();
                 ufs.use(vol as any);
                 ufs.readFile('/not-found', 'utf8', (err, data) => {
-                    expect(err.code).toBe('ENOENT');
+                    expect(err?.code).toBe('ENOENT');
                     done();
                 });
             });
@@ -192,7 +192,7 @@ describe('union', () => {
             it('No file systems attached', done => {
                 const ufs = new Union();
                 ufs.stat('/foo2', (err, data) => {
-                    expect(err.message).toBe('No file systems attached.');
+                    expect(err?.message).toBe('No file systems attached.');
                     done();
                 });
             });
@@ -312,7 +312,7 @@ describe('union', () => {
             it('Method does not exist', async () => {
                 const vol = Volume.fromJSON({'/foo': 'bar'});
                 const ufs = new Union();
-                vol.promises.readFile = undefined;
+                vol.promises.readFile = undefined as any;
                 ufs.use(vol as any);
                 await expect(ufs.promises.readFile('/foo', 'utf8')).rejects.toThrowError();
             });

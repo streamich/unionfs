@@ -1,9 +1,10 @@
+import { FSWatcher } from "fs";
 import {IFS} from "./fs";
 import {Readable, Writable} from 'stream';
 const {fsAsyncMethods, fsSyncMethods} = require('fs-monkey/lib/util/lists');
 
 export interface IUnionFsError extends Error {
-    prev?: IUnionFsError,
+    prev?: IUnionFsError | null,
 }
 
 const SPECIAL_METHODS = new Set([
@@ -17,10 +18,10 @@ const SPECIAL_METHODS = new Set([
     "unwatchFile"
 ]);
 
-const createFSProxy = watchers => new Proxy({}, {
+const createFSProxy = (watchers: FSWatcher[]) => new Proxy({}, {
     get(_obj, property) {
-        const funcCallers = [];
-        let prop;
+        const funcCallers: Array<[FSWatcher, Function]> = [];
+        let prop: Function | undefined;
         for (const watcher of watchers) {
             prop = watcher[property];
             // if we're a function we wrap it in a bigger caller;
@@ -115,7 +116,7 @@ export class Union {
     }
 
     public watch = (...args) => {
-        const watchers = [];
+        const watchers: FSWatcher[] = [];
         for (const fs of this.fss) {
             try {
                 const watcher = fs.watch.apply(fs, args);
@@ -130,18 +131,13 @@ export class Union {
     }
 
     public watchFile = (...args) => {
-        const watchers = [];
         for (const fs of this.fss) {
             try {
-                const watcher = fs.watchFile.apply(fs, args);
-                watchers.push(watcher);
+                fs.watchFile.apply(fs, args);
             } catch (e) {
                 // dunno what to do here...
             }
         }
-
-        // return a proxy to call functions on these props
-        return createFSProxy(watchers);
     }
 
     public existsSync = (path: string) => {
@@ -166,9 +162,9 @@ export class Union {
             lastarg++;
         }
 
-        let lastError: IUnionFsError = null;
+        let lastError: IUnionFsError | null = null;
         let result: Set<string> = new Set();
-        const iterate = (i = 0, error?: IUnionFsError) => {
+        const iterate = (i = 0, error?: IUnionFsError | null) => {
             if(error) {
                 error.prev = lastError;
                 lastError = error;
@@ -212,7 +208,7 @@ export class Union {
     };
 
     public readdirSync = (...args) => {
-        let lastError: IUnionFsError = null;
+        let lastError: IUnionFsError | null = null;
         let result = new Set<string>();
         for(let i = this.fss.length - 1; i >= 0; i--) {
             const fs = this.fss[i];
@@ -237,7 +233,7 @@ export class Union {
     };
 
     public readdirPromise = async (...args) => {
-        let lastError: IUnionFsError = null;
+        let lastError: IUnionFsError | null = null;
         let result = new Set<string>();
         for(let i = this.fss.length - 1; i >= 0; i--) {
             const fs = this.fss[i];
@@ -326,7 +322,7 @@ export class Union {
     }
 
     private syncMethod(method: string, args: any[]) {
-        let lastError: IUnionFsError = null;
+        let lastError: IUnionFsError | null = null;
         for(let i = this.fss.length - 1; i >= 0; i--) {
             const fs = this.fss[i];
             try {
@@ -353,7 +349,7 @@ export class Union {
             lastarg++;
         }
 
-        let lastError: IUnionFsError = null;
+        let lastError: IUnionFsError | null = null;
         const iterate = (i = 0, err?: IUnionFsError) => {
             if(err) {
                 err.prev = lastError;
