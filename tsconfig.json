@@ -12,6 +12,7 @@
     "sourceMap": false,
     "strictNullChecks": true,
     "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
     "downlevelIteration": true
   },
   "exclude": [
