@@ -41,6 +41,33 @@ const createFSProxy = watchers => new Proxy({}, {
     }
 });
 
+const fsPromisesMethods = [
+    'access',
+    'copyFile',
+    'open',
+    'opendir',
+    'rename',
+    'truncate',
+    'rmdir',
+    'mkdir',
+    'readdir',
+    'readlink',
+    'symlink',
+    'lstat',
+    'stat',
+    'link',
+    'unlink',
+    'chmod',
+    'lchmod',
+    'lchown',
+    'chown',
+    'utimes',
+    'realpath',
+    'mkdtemp',
+    'writeFile',
+    'appendFile',
+    'readFile'
+] as const;
 
 /**
  * Union object represents a stack of filesystems
@@ -52,6 +79,8 @@ export class Union {
     public ReadStream = Readable;
     public WriteStream = Writable;
 
+    private promises: {} = {};
+
     constructor() {
         for(let method of fsSyncMethods) {
             if (!SPECIAL_METHODS.has(method)) { // check we don't already have a property for this method
@@ -62,6 +91,16 @@ export class Union {
             if (!SPECIAL_METHODS.has(method)) { // check we don't already have a property for this method
                 this[method] = (...args) => this.asyncMethod(method, args);
             }
+        }
+
+        for(let method of fsPromisesMethods) {
+            if(method ==='readdir') {
+                this.promises[method] = this.readdirPromise;
+
+                continue;
+            }
+
+            this.promises[method] = (...args) => this.promiseMethod(method, args);
         }
 
         for (let method of SPECIAL_METHODS.values()) {
@@ -197,6 +236,32 @@ export class Union {
         return Array.from(result).sort();
     };
 
+    public readdirPromise = async (...args) => {
+        let lastError: IUnionFsError = null;
+        let result = new Set<string>();
+        for(let i = this.fss.length - 1; i >= 0; i--) {
+            const fs = this.fss[i];
+            try {
+                if(!fs.promises || !fs.promises.readdir) throw Error(`Method not supported: "readdirSync" with args "${args}"`);
+                for (const res of await fs.promises.readdir.apply(fs, args)) {
+                    // Convert all results to Strings to make sure that they're deduped
+                    result.add(String(res));
+                }
+            } catch(err) {
+                err.prev = lastError;
+                lastError = err;
+                if(result.size === 0 && !i) { // last one
+                    throw err;
+                } else {
+                    // Ignore error...
+                    // continue;
+                }
+            }
+        }
+        return Array.from(result).sort();
+    };
+
+
     public createReadStream = (path: string) => {
         let lastError = null;
         for (const fs of this.fss) {
@@ -315,5 +380,36 @@ export class Union {
             else func.apply(fs, args);
         };
         iterate();
+    }
+
+    async promiseMethod(method: string, args: any[]) {
+        let lastError = null;
+
+        for (let i = this.fss.length - 1; i >= 0; i--) {
+            const theFs = this.fss[i];
+
+            const promises = theFs.promises;
+
+            try {
+                if (!promises || !promises[method]) {
+                    throw Error(
+                      `Promise of method not supported: "${String(method)}" with args "${args}"`
+                    );
+                }
+
+                // return promises[method](...args);
+                return await promises[method].apply(promises, args);
+            } catch (err) {
+                err.prev = lastError;
+                lastError = err;
+                if (!i) {
+                    // last one
+                    throw err;
+                } else {
+                    // Ignore error...
+                    // continue;
+                }
+            }
+        }
     }
 }

@@ -74,7 +74,7 @@ type FSMethods =
     | "exists"
     | "access";
 
-type FS = Pick<typeof fs, FSMethods>
+type FS = Pick<typeof fs, FSMethods | 'promises'>;
 
 export interface IFS extends FS {
     WriteStream: typeof Writable;
