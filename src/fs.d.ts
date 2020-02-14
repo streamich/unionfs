@@ -2,7 +2,6 @@ import { Writable, Readable } from "stream";
 import * as fs from "fs";
 
 type FSMethods =
-    | "readFileSync"
     | "renameSync"
     | "ftruncateSync"
     | "truncateSync"
@@ -59,7 +58,6 @@ type FSMethods =
     | "unlink"
     | "rmdir"
     | "mkdir"
-    | "readdir"
     | "readdir"
     | "close"
     | "open"
