@@ -77,6 +77,6 @@ type FSMethods =
 type FS = Pick<typeof fs, FSMethods | 'promises'>;
 
 export interface IFS extends FS {
-    WriteStream: typeof Writable;
-    ReadStream: typeof Readable;
+    WriteStream: (typeof Writable) | (new (...args: any[]) => Writable);
+    ReadStream: (typeof Readable) | (new (...args: any[]) => Readable);
 }

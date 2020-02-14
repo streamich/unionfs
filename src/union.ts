@@ -77,8 +77,8 @@ export class Union {
 
     private fss: IFS[] = [];
 
-    public ReadStream = Readable;
-    public WriteStream = Writable;
+    public ReadStream: (typeof Readable) | (new (...args: any[]) => Readable) = Readable;
+    public WriteStream: (typeof Writable) | (new (...args: any[]) => Writable) = Writable;
 
     private promises: {} = {};
 
