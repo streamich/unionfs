@@ -13,7 +13,8 @@
     "strictNullChecks": true,
     "strictBindCallApply": true,
     "strictPropertyInitialization": true,
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "declaration": true
   },
   "include": ["src"],
   "exclude": [
