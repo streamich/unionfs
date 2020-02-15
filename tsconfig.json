@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "es5",
     "lib": [
-      "dom",
       "es5",
       "es2015"
     ],
@@ -10,6 +9,9 @@
     "removeComments": false,
     "noImplicitAny": false,
     "sourceMap": false,
+    "strictNullChecks": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
     "downlevelIteration": true
   },
   "exclude": [
