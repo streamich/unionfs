@@ -1,3 +1,10 @@
+## [4.3.1](https://github.com/streamich/unionfs/compare/v4.3.0...v4.3.1) (2020-02-15)
+
+
+### Bug Fixes
+
+* generate type definitions ([0f87f53](https://github.com/streamich/unionfs/commit/0f87f53ecd96fa5c3fed8c9813f66eb5c5921cc8))
+
 # [4.3.0](https://github.com/streamich/unionfs/compare/v4.2.1...v4.3.0) (2020-02-15)
 
 
