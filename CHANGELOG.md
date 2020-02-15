@@ -1,3 +1,10 @@
+# [4.3.0](https://github.com/streamich/unionfs/compare/v4.2.1...v4.3.0) (2020-02-15)
+
+
+### Features
+
+* support `promises` namespace ([f7bd521](https://github.com/streamich/unionfs/commit/f7bd521b09a6c8d7a212a09670b6938b5f5eff9b))
+
 ## [4.2.1](https://github.com/streamich/unionfs/compare/v4.2.0...v4.2.1) (2019-12-19)
 
 
