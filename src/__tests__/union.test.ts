@@ -53,13 +53,14 @@ describe('union', () => {
 
                     const mockCallback = jest.fn();
                     const writtenContent  = "hello world";
-                    ufs.watch("/tmp/foo.js", mockCallback);
+                    const watcher = ufs.watch("/tmp/foo.js", mockCallback);
 
                     ufs.writeFileSync("/tmp/foo.js", writtenContent);
 
                     expect(mockCallback).toBeCalledTimes(2);
-
                     expect(mockCallback).toBeCalledWith('change', '/tmp/foo.js');
+
+                    watcher.close();
                 })
             })
 
