@@ -1,8 +1,9 @@
+import { PathLike } from 'fs';
 import {Union as _Union} from "./union";
 import {IFS} from "./fs";
 
 
-export type TFilePath = string | Buffer | URL;
+export type TFilePath = PathLike;
 export type TFileId = TFilePath | number;           // Number is used as a file descriptor.
 export type TDataOut = string | Buffer;             // Data formats we give back to users.
 export type TData = TDataOut | Uint8Array;          // Data formats users can give us.
