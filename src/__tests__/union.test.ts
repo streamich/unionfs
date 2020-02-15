@@ -128,17 +128,17 @@ describe('union', () => {
                       "/bar/baz": "not baz",
                       "/bar/qux": "baz"
                     });
-          
+
                     const ufs = new Union();
                     ufs.use(vol as any);
                     ufs.use(vol2 as any);
                     expect(ufs.readdirSync("/bar")).toEqual(["baz", "qux"]);
                 });
-        
+
                 it("throws error when all fss fail", () => {
                     const vol = Volume.fromJSON({});
                     const vol2 = Volume.fromJSON({});
-            
+
                     const ufs = new Union();
                     ufs.use(vol as any);
                     ufs.use(vol2 as any);
@@ -259,7 +259,7 @@ describe('union', () => {
                         "/bar/baz": "not baz",
                         "/bar/qux": "baz"
                     });
-          
+
                     const ufs = new Union();
                     ufs.use(vol as any);
                     ufs.use(vol2 as any);
@@ -269,11 +269,11 @@ describe('union', () => {
                         done();
                     });
                 });
-          
+
                 it("throws error when all fss fail", done => {
                     const vol = Volume.fromJSON({});
                     const vol2 = Volume.fromJSON({});
-          
+
                     const ufs = new Union();
                     ufs.use(vol as any);
                     ufs.use(vol2 as any);
@@ -281,6 +281,108 @@ describe('union', () => {
                         expect(err).not.toBeNull();
                         done();
                     });
+                });
+            });
+        });
+        describe('promise methods', () => {
+            it('Basic one file system', async () => {
+                const vol = Volume.fromJSON({'/foo': 'bar'});
+                const ufs = new Union();
+                ufs.use(vol as any);
+                await expect(ufs.promises.readFile('/foo', 'utf8')).resolves.toBe('bar');
+            });
+
+            it('basic two filesystems', async () => {
+                const vol = Volume.fromJSON({'/foo': 'bar'});
+                const vol2 = Volume.fromJSON({'/foo': 'baz'});
+                const ufs = new Union();
+                ufs.use(vol as any);
+                ufs.use(vol2 as any);
+
+                await expect(ufs.promises.readFile('/foo', 'utf8')).resolves.toBe('baz');
+            });
+
+            it('File not found', async () => {
+                const vol = Volume.fromJSON({'/foo': 'bar'});
+                const ufs = new Union();
+                ufs.use(vol as any);
+                await expect(ufs.promises.readFile('/not-found', 'utf8')).rejects.toThrowError('ENOENT');
+            });
+
+            it('Method does not exist', async () => {
+                const vol = Volume.fromJSON({'/foo': 'bar'});
+                const ufs = new Union();
+                vol.promises.readFile = undefined;
+                ufs.use(vol as any);
+                await expect(ufs.promises.readFile('/foo', 'utf8')).rejects.toThrowError();
+            });
+
+            describe("readdir", () => {
+                it('reads one memfs correctly', async () => {
+                    const vol = Volume.fromJSON({
+                        '/foo/bar': 'bar',
+                        '/foo/baz': 'baz',
+                    });
+                    const ufs = new Union();
+                    ufs.use(vol as any);
+                    await expect(ufs.promises.readdir("/foo")).resolves.toEqual(["bar", "baz"]);
+                });
+
+                it('reads multiple memfs', async () => {
+                    const vol = Volume.fromJSON({
+                        '/foo/bar': 'bar',
+                        '/foo/baz': 'baz',
+                    });
+                    const vol2 = Volume.fromJSON({
+                        '/foo/qux': 'baz',
+                    });
+
+                    const ufs = new Union();
+                    ufs.use(vol as any);
+                    ufs.use(vol2 as any);
+                    await expect(ufs.promises.readdir("/foo")).resolves.toEqual(["bar", "baz", "qux"]);
+                });
+
+                it('reads dedupes multiple fss', async () => {
+                    const vol = Volume.fromJSON({
+                        '/foo/bar': 'bar',
+                        '/foo/baz': 'baz',
+                    });
+                    const vol2 = Volume.fromJSON({
+                        '/foo/baz': 'not baz',
+                        '/foo/qux': 'baz',
+                    });
+
+                    const ufs = new Union();
+                    ufs.use(vol as any);
+                    ufs.use(vol2 as any);
+                    await expect(ufs.promises.readdir("/foo")).resolves.toEqual(["bar", "baz", "qux"]);
+                });
+
+                it("reads other fss when one fails", async () => {
+                    const vol = Volume.fromJSON({
+                        "/foo/bar": "bar",
+                        "/foo/baz": "baz"
+                    });
+                    const vol2 = Volume.fromJSON({
+                        "/bar/baz": "not baz",
+                        "/bar/qux": "baz"
+                    });
+
+                    const ufs = new Union();
+                    ufs.use(vol as any);
+                    ufs.use(vol2 as any);
+                    await expect(ufs.promises.readdir("/bar")).resolves.toEqual(["baz", "qux"]);
+                });
+
+                it("throws error when all fss fail", async () => {
+                    const vol = Volume.fromJSON({});
+                    const vol2 = Volume.fromJSON({});
+
+                    const ufs = new Union();
+                    ufs.use(vol as any);
+                    ufs.use(vol2 as any);
+                    await expect(ufs.promises.readdir("/bar")).rejects.toThrow();
                 });
             });
         });
