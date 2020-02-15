@@ -5,6 +5,7 @@
       "es5",
       "es2015"
     ],
+    "outDir": "lib",
     "module": "commonjs",
     "removeComments": false,
     "noImplicitAny": false,
@@ -14,8 +15,11 @@
     "strictPropertyInitialization": true,
     "downlevelIteration": true
   },
+  "include": ["src"],
   "exclude": [
+    "src/__tests__",
     "node_modules",
+    "demo",
     "lib"
   ]
 }
