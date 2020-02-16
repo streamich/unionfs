@@ -4207,10 +4207,10 @@ mem@^4.0.0:
     mimic-fn "^2.0.0"
     p-is-promise "^2.0.0"
 
-memfs@3.0.5:
-  version "3.0.5"
-  resolved "https://registry.yarnpkg.com/memfs/-/memfs-3.0.5.tgz#3e7a2f75e560dd595380dcae48ce5ea28f600732"
-  integrity sha512-dsIGlAD8bNJUfbeMzoZWDvyxUhxjoXIooYM3mnVYdLxgihy+byT4811NjeQ4bhiP32aZ9FKO8oXvq9KjLrQL0A==
+memfs@3.0.6:
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/memfs/-/memfs-3.0.6.tgz#fd011109585b581d88976723d215a0d19802c0e4"
+  integrity sha512-EELRQ/ekXP/RPlrJUBXQJOp1MQNoA5j5lnsOYdiS6jEC2JHkw3Lo3gxImxy/7pgKiWZOahGFO6nO1qWTTAK+Kg==
   dependencies:
     fast-extend "1.0.2"
     fs-monkey "0.3.3"
