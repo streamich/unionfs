@@ -1,3 +1,10 @@
+## [4.3.2](https://github.com/streamich/unionfs/compare/v4.3.1...v4.3.2) (2020-02-17)
+
+
+### Bug Fixes
+
+* **deps:** update dependency fs-monkey to v1 ([db853bd](https://github.com/streamich/unionfs/commit/db853bdddc1a252da8717496f85d4def6cb418a1))
+
 ## [4.3.1](https://github.com/streamich/unionfs/compare/v4.3.0...v4.3.1) (2020-02-15)
 
 
