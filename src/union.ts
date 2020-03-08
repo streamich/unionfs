@@ -1,4 +1,4 @@
-import { FSWatcher } from "fs";
+import { FSWatcher, Dirent } from "fs";
 import {IFS} from "./fs";
 import {Readable, Writable} from 'stream';
 const {fsAsyncMethods, fsSyncMethods} = require('fs-monkey/lib/util/lists');
@@ -6,6 +6,8 @@ const {fsAsyncMethods, fsSyncMethods} = require('fs-monkey/lib/util/lists');
 export interface IUnionFsError extends Error {
     prev?: IUnionFsError | null,
 }
+
+type readdirEntry = string | Buffer | Dirent;
 
 const SPECIAL_METHODS = new Set([
     "existsSync",
@@ -154,7 +156,7 @@ export class Union {
         return false;
     };
 
-    public readdir = (...args) => {
+    public readdir = (...args): void => {
         let lastarg = args.length - 1;
         let cb = args[lastarg];
         if(typeof cb !== 'function') {
@@ -163,7 +165,7 @@ export class Union {
         }
 
         let lastError: IUnionFsError | null = null;
-        let result: Set<string> = new Set();
+        let result = new Map<string, readdirEntry>();
         const iterate = (i = 0, error?: IUnionFsError | null) => {
             if(error) {
                 error.prev = lastError;
@@ -179,19 +181,18 @@ export class Union {
             }
 
             // Replace `callback` with our intermediate function.
-            args[lastarg] = (err, resArg: string[] | Buffer[]) => {
+            args[lastarg] = (err, resArg: readdirEntry[]) => {
                 if(result.size === 0 && err) {
                     return iterate(i + 1, err);
                 }
                 if(resArg) {
-                    // Convert all results to Strings to make sure that they're deduped
                     for (const res of resArg) {
-                        result.add(String(res));
+                        result.set(this.pathFromReaddirEntry(res), res);
                     }
                 }
 
                 if (i === this.fss.length - 1) {
-                    return cb(null, Array.from(result).sort());
+                    return cb(null, this.sortedArrayFromReaddirResult(result));
                 } else {
                     return iterate(i + 1, error);
                 }
@@ -207,16 +208,15 @@ export class Union {
         iterate();
     };
 
-    public readdirSync = (...args) => {
+    public readdirSync = (...args): Array<readdirEntry> => {
         let lastError: IUnionFsError | null = null;
-        let result = new Set<string>();
+        let result = new Map<string, readdirEntry>();
         for(let i = this.fss.length - 1; i >= 0; i--) {
             const fs = this.fss[i];
             try {
                 if(!fs.readdirSync) throw Error(`Method not supported: "readdirSync" with args "${args}"`);
                 for (const res of fs.readdirSync.apply(fs, args)) {
-                    // Convert all results to Strings to make sure that they're deduped
-                    result.add(String(res));
+                    result.set(this.pathFromReaddirEntry(res), res);
                 }
             } catch(err) {
                 err.prev = lastError;
@@ -229,19 +229,18 @@ export class Union {
                 }
             }
         }
-        return Array.from(result).sort();
+        return this.sortedArrayFromReaddirResult(result);
     };
 
-    public readdirPromise = async (...args) => {
+    public readdirPromise = async (...args): Promise<Array<readdirEntry>> => {
         let lastError: IUnionFsError | null = null;
-        let result = new Set<string>();
+        let result = new Map<string, readdirEntry>();
         for(let i = this.fss.length - 1; i >= 0; i--) {
             const fs = this.fss[i];
             try {
                 if(!fs.promises || !fs.promises.readdir) throw Error(`Method not supported: "readdirSync" with args "${args}"`);
                 for (const res of await fs.promises.readdir.apply(fs, args)) {
-                    // Convert all results to Strings to make sure that they're deduped
-                    result.add(String(res));
+                    result.set(this.pathFromReaddirEntry(res), res);
                 }
             } catch(err) {
                 err.prev = lastError;
@@ -254,9 +253,24 @@ export class Union {
                 }
             }
         }
-        return Array.from(result).sort();
+        return this.sortedArrayFromReaddirResult(result);
     };
 
+    private pathFromReaddirEntry = (readdirEntry: readdirEntry): string => {
+        if (readdirEntry instanceof Buffer || typeof readdirEntry === 'string') {
+            return String(readdirEntry);
+        }
+        return readdirEntry.name;
+    };
+
+    private sortedArrayFromReaddirResult = (readdirResult: Map<string, readdirEntry>): readdirEntry[] => {
+        const array: readdirEntry[] = [];
+        for (const key of Array.from(readdirResult.keys()).sort()) {
+            const value = readdirResult.get(key);
+            if (value !== undefined) array.push(value);
+        }
+        return array
+    };
 
     public createReadStream = (path: string) => {
         let lastError = null;

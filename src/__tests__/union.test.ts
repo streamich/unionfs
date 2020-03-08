@@ -1,5 +1,5 @@
 import {Union} from '..';
-import {Volume} from 'memfs';
+import {Volume, createFsFromVolume} from 'memfs';
 import * as fs from 'fs';
 
 describe('union', () => {
@@ -136,6 +136,20 @@ describe('union', () => {
                     expect(ufs.readdirSync("/bar")).toEqual(["baz", "qux"]);
                 });
 
+                it("honors the withFileTypes: true option", () => {
+                    const vol = Volume.fromJSON({
+                        '/foo/bar': 'bar',
+                        '/foo/zzz': 'zzz',
+                        '/foo/baz': 'baz'
+                    });
+
+                    const ufs = new Union();
+                    ufs.use(vol as any);
+                    const files = ufs.readdirSync("/foo", { withFileTypes: true });
+                    expect(files[0]).toBeInstanceOf(createFsFromVolume(vol).Dirent);
+                    expect(files.map(f => f.name)).toEqual(['bar', 'baz', 'zzz']);
+                });
+
                 it("throws error when all fss fail", () => {
                     const vol = Volume.fromJSON({});
                     const vol2 = Volume.fromJSON({});
@@ -222,7 +236,7 @@ describe('union', () => {
                 it('reads one memfs correctly', () => {
                     const vol = Volume.fromJSON({
                         '/foo/bar': 'bar',
-                        '/foo/baz': 'baz',
+                        '/foo/baz': 'baz'
                     });
                     const ufs = new Union();
                     ufs.use(vol as any);
@@ -266,6 +280,22 @@ describe('union', () => {
                     ufs.readdir("/bar", (err, files) => {
                         expect(err).toBeNull();
                         expect(files).toEqual(["baz", "qux"]);
+                        done();
+                    });
+                });
+
+                it("honors the withFileTypes: true option", done => {
+                    const vol = Volume.fromJSON({
+                        '/foo/bar': 'bar',
+                        '/foo/zzz': 'zzz',
+                        '/foo/baz': 'baz'
+                    });
+
+                    const ufs = new Union();
+                    ufs.use(vol as any);
+                    ufs.readdir("/foo", { withFileTypes: true }, (err, files) => {
+                        expect(files[0]).toBeInstanceOf(createFsFromVolume(vol).Dirent);
+                        expect(files.map(f => f.name)).toEqual(['bar', 'baz', 'zzz']);
                         done();
                     });
                 });
@@ -373,6 +403,20 @@ describe('union', () => {
                     ufs.use(vol as any);
                     ufs.use(vol2 as any);
                     await expect(ufs.promises.readdir("/bar")).resolves.toEqual(["baz", "qux"]);
+                });
+
+                it("honors the withFileTypes: true option", async () => {
+                    const vol = Volume.fromJSON({
+                        '/foo/bar': 'bar',
+                        '/foo/zzz': 'zzz',
+                        '/foo/baz': 'baz'
+                    });
+
+                    const ufs = new Union();
+                    ufs.use(vol as any);
+                    const files = await ufs.promises.readdir("/foo", { withFileTypes: true });
+                    expect(files[0]).toBeInstanceOf(createFsFromVolume(vol).Dirent);
+                    expect(files.map(f => f.name)).toEqual(['bar', 'baz', 'zzz']);
                 });
 
                 it("throws error when all fss fail", async () => {
