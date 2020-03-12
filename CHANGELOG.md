@@ -1,3 +1,10 @@
+# [4.4.0](https://github.com/streamich/unionfs/compare/v4.3.2...v4.4.0) (2020-03-12)
+
+
+### Features
+
+* support `withFileTypes` option for `readdir` methods ([23472d7](https://github.com/streamich/unionfs/commit/23472d7cedd67f9e4e830883d28aa5118cb2d739))
+
 ## [4.3.2](https://github.com/streamich/unionfs/compare/v4.3.1...v4.3.2) (2020-02-17)
 
 
