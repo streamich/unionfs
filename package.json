@@ -38,7 +38,7 @@
     "@semantic-release/npm": "5.3.5",
     "@types/jest": "25.1.4",
     "@types/node": "11.15.8",
-    "jest": "25.2.3",
+    "jest": "25.2.4",
     "memfs": "3.1.2",
     "memory-fs": "0.5.0",
     "source-map-support": "0.5.16",
