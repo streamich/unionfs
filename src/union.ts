@@ -72,12 +72,16 @@ const fsPromisesMethods = [
     'readFile'
 ] as const;
 
+export type VolOptions = {
+    readonly?: boolean
+}
+
 /**
  * Union object represents a stack of filesystems
  */
 export class Union {
 
-    private fss: IFS[] = [];
+    private fss: [IFS, VolOptions][] = [];
 
     public ReadStream: (typeof Readable) | (new (...args: any[]) => Readable) = Readable;
     public WriteStream: (typeof Writable) | (new (...args: any[]) => Writable) = Writable;
@@ -119,7 +123,7 @@ export class Union {
 
     public watch = (...args) => {
         const watchers: FSWatcher[] = [];
-        for (const fs of this.fss) {
+        for (const [fs] of this.fss) {
             try {
                 const watcher = fs.watch.apply(fs, args);
                 watchers.push(watcher);
@@ -133,7 +137,7 @@ export class Union {
     }
 
     public watchFile = (...args) => {
-        for (const fs of this.fss) {
+        for (const [fs] of this.fss) {
             try {
                 fs.watchFile.apply(fs, args);
             } catch (e) {
@@ -143,7 +147,7 @@ export class Union {
     }
 
     public existsSync = (path: string) => {
-        for (const fs of this.fss) {
+        for (const [fs] of this.fss) {
             try {
                 if(fs.existsSync(path)) {
                     return true
@@ -199,7 +203,7 @@ export class Union {
             };
 
             const j = this.fss.length - i - 1;
-            const fs = this.fss[j];
+            const [fs] = this.fss[j];
             const func = fs.readdir;
 
             if(!func) iterate(i + 1, Error('Method not supported: readdir'));
@@ -212,7 +216,7 @@ export class Union {
         let lastError: IUnionFsError | null = null;
         let result = new Map<string, readdirEntry>();
         for(let i = this.fss.length - 1; i >= 0; i--) {
-            const fs = this.fss[i];
+            const [fs] = this.fss[i];
             try {
                 if(!fs.readdirSync) throw Error(`Method not supported: "readdirSync" with args "${args}"`);
                 for (const res of fs.readdirSync.apply(fs, args)) {
@@ -236,7 +240,7 @@ export class Union {
         let lastError: IUnionFsError | null = null;
         let result = new Map<string, readdirEntry>();
         for(let i = this.fss.length - 1; i >= 0; i--) {
-            const fs = this.fss[i];
+            const [fs] = this.fss[i];
             try {
                 if(!fs.promises || !fs.promises.readdir) throw Error(`Method not supported: "readdirSync" with args "${args}"`);
                 for (const res of await fs.promises.readdir.apply(fs, args)) {
@@ -274,7 +278,7 @@ export class Union {
 
     public createReadStream = (path: string) => {
         let lastError = null;
-        for (const fs of this.fss) {
+        for (const [fs] of this.fss) {
             try {
                 if(!fs.createReadStream) throw Error(`Method not supported: "createReadStream"`);
 
@@ -300,7 +304,7 @@ export class Union {
 
     public createWriteStream = (path: string) => {
         let lastError = null;
-        for (const fs of this.fss) {
+        for (const [fs] of this.fss) {
             try {
                 if(!fs.createWriteStream) throw Error(`Method not supported: "createWriteStream"`);
 
@@ -330,15 +334,15 @@ export class Union {
      * @param fs the filesystem interface to be added to the queue of FS's
      * @returns this instance of a unionFS
      */
-    use(fs: IFS): this {
-        this.fss.push(fs);
+    use(fs: IFS, options: VolOptions = {readonly: false}): this {
+        this.fss.push([fs, options]);
         return this;
     }
 
     private syncMethod(method: string, args: any[]) {
         let lastError: IUnionFsError | null = null;
         for(let i = this.fss.length - 1; i >= 0; i--) {
-            const fs = this.fss[i];
+            const [fs] = this.fss[i];
             try {
                 if(!fs[method]) throw Error(`Method not supported: "${method}" with args "${args}"`);
                 return fs[method].apply(fs, args);
@@ -383,7 +387,7 @@ export class Union {
             };
 
             const j = this.fss.length - i - 1;
-            const fs = this.fss[j];
+            const [fs] = this.fss[j];
             const func = fs[method];
 
             if(!func) iterate(i + 1, Error('Method not supported: ' + method));
@@ -396,9 +400,9 @@ export class Union {
         let lastError = null;
 
         for (let i = this.fss.length - 1; i >= 0; i--) {
-            const theFs = this.fss[i];
+            const [fs] = this.fss[i];
 
-            const promises = theFs.promises;
+            const promises = fs.promises;
 
             try {
                 if (!promises || !promises[method]) {
