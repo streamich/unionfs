@@ -44,6 +44,10 @@ const createFSProxy = (watchers: FSWatcher[]) => new Proxy({}, {
     }
 });
 
+const isWriteMethod = (method: string): boolean => {
+    return method.includes('write')
+}
+
 const fsPromisesMethods = [
     'access',
     'copyFile',
@@ -342,14 +346,14 @@ export class Union {
     private syncMethod(method: string, args: any[]) {
         let lastError: IUnionFsError | null = null;
         for(let i = this.fss.length - 1; i >= 0; i--) {
-            const [fs] = this.fss[i];
+            const [fs, {readonly = false}] = this.fss[i];
             try {
                 if(!fs[method]) throw Error(`Method not supported: "${method}" with args "${args}"`);
                 return fs[method].apply(fs, args);
             } catch(err) {
                 err.prev = lastError;
                 lastError = err;
-                if(!i) { // last one
+                if(!i && !(readonly && isWriteMethod(method))) { // last one
                     throw err;
                 } else {
                     // Ignore error...

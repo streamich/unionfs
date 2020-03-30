@@ -78,6 +78,28 @@ describe('union', () => {
                 });
             });
 
+            // describe("copyFileSync", () => {
+            //     it('copies from one memfs to another', () => {
+            //         const vol1 = Volume.fromJSON({'/vol1': 'vol1'});
+            //         const vol2 = Volume.fromJSON({});
+            //         const ufs = new Union() as any;
+            //         ufs.use(vol1 as any).use(vol2 as any)
+            //         ufs.copyFileSync('/vol1', '/vol2');
+            //         expect(ufs.readFileSync('/vol2')).toEqual('vol1');
+            //     })
+            // });
+
+            describe("writeFileSync", () => {
+                it('writes to the first vol', () => {
+                    const vol1 = Volume.fromJSON({});
+                    const vol2 = Volume.fromJSON({});
+                    const ufs = new Union() as any;
+                    ufs.use(vol1 as any).use(vol2 as any)
+                    ufs.writeFileSync('/foo', 'bar')
+                    expect(vol1.readFileSync('/foo', 'utf8')).toEqual('bar');
+                })
+            });
+
             describe("readdirSync", () => {
                 it('reads one memfs correctly', () => {
                     const vol = Volume.fromJSON({
