@@ -2,7 +2,7 @@ import {Union as _Union} from "./union";
 import {IFS} from "./fs";
 
 export interface IUnionFs extends IFS {
-    use: _Union['use']
+    use: (...args: Parameters<_Union['use']>) => this
 }
 
 export const Union = _Union as any as (new () => IUnionFs);
