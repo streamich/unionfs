@@ -1,7 +1,7 @@
 import { FSWatcher, Dirent } from "fs";
 import {IFS} from "./fs";
 import {Readable, Writable} from 'stream';
-const {fsAsyncMethods, fsSyncMethods} = require('fs-monkey/lib/util/lists');
+import {fsSyncMethodsWriteonly, fsSyncMethodsReadonly, fsAsyncMethodsWriteonly, fsAsyncMethodsReadonly, fsPromiseMethodsWriteonly, fsPromiseMethodsReadonly} from './lists'
 
 export interface IUnionFsError extends Error {
     prev?: IUnionFsError | null,
@@ -44,40 +44,25 @@ const createFSProxy = (watchers: FSWatcher[]) => new Proxy({}, {
     }
 });
 
-const isWriteMethod = (method: string): boolean => {
-    return method.includes('write')
-}
-
-const fsPromisesMethods = [
-    'access',
-    'copyFile',
-    'open',
-    'opendir',
-    'rename',
-    'truncate',
-    'rmdir',
-    'mkdir',
-    'readdir',
-    'readlink',
-    'symlink',
-    'lstat',
-    'stat',
-    'link',
-    'unlink',
-    'chmod',
-    'lchmod',
-    'lchown',
-    'chown',
-    'utimes',
-    'realpath',
-    'mkdtemp',
-    'writeFile',
-    'appendFile',
-    'readFile'
-] as const;
-
 export type VolOptions = {
     readonly?: boolean
+    writeonly?: boolean
+}
+
+type SyncMethodNames = typeof fsSyncMethodsReadonly[number] & typeof fsSyncMethodsWriteonly[number]
+type ASyncMethodNames = typeof fsSyncMethodsReadonly[number] & typeof fsAsyncMethodsWriteonly[number]
+type PromiseMethodNames = typeof fsPromiseMethodsReadonly[number] & typeof fsPromiseMethodsWriteonly[number]
+type FSMethod = (args: any) => any
+type FSMethodStack = {
+    sync: {
+      [K in SyncMethodNames]: FSMethod | undefined
+    },
+    async: {
+        [K in ASyncMethodNames]: FSMethod | undefined;
+    },
+    promise: {
+        [K in PromiseMethodNames]: FSMethod | undefined;
+    },
 }
 
 /**
@@ -85,7 +70,7 @@ export type VolOptions = {
  */
 export class Union {
 
-    private fss: [IFS, VolOptions][] = [];
+    private fss: [IFS, VolOptions, FSMethodStack][] = [];
 
     public ReadStream: (typeof Readable) | (new (...args: any[]) => Readable) = Readable;
     public WriteStream: (typeof Writable) | (new (...args: any[]) => Writable) = Writable;
@@ -93,18 +78,18 @@ export class Union {
     private promises: {} = {};
 
     constructor() {
-        for(let method of fsSyncMethods) {
+        for(let method of [...fsSyncMethodsReadonly, ...fsSyncMethodsWriteonly]) {
             if (!SPECIAL_METHODS.has(method)) { // check we don't already have a property for this method
                 this[method] = (...args) => this.syncMethod(method, args);
             }
         }
-        for(let method of fsAsyncMethods) {
+        for(let method of [...fsAsyncMethodsReadonly, ...fsAsyncMethodsWriteonly]) {
             if (!SPECIAL_METHODS.has(method)) { // check we don't already have a property for this method
                 this[method] = (...args) => this.asyncMethod(method, args);
             }
         }
 
-        for(let method of fsPromisesMethods) {
+        for(let method of [...fsPromiseMethodsReadonly, ...fsPromiseMethodsWriteonly]) {
             if(method ==='readdir') {
                 this.promises[method] = this.readdirPromise;
 
@@ -127,7 +112,8 @@ export class Union {
 
     public watch = (...args) => {
         const watchers: FSWatcher[] = [];
-        for (const [fs] of this.fss) {
+        for (const [fs, {writeonly}] of this.fss) {
+            if (writeonly) continue;
             try {
                 const watcher = fs.watch.apply(fs, args);
                 watchers.push(watcher);
@@ -141,7 +127,8 @@ export class Union {
     }
 
     public watchFile = (...args) => {
-        for (const [fs] of this.fss) {
+        for (const [fs, {writeonly}] of this.fss) {
+            if (writeonly) continue;
             try {
                 fs.watchFile.apply(fs, args);
             } catch (e) {
@@ -151,7 +138,8 @@ export class Union {
     }
 
     public existsSync = (path: string) => {
-        for (const [fs] of this.fss) {
+        for (const [fs, {writeonly}] of this.fss) {
+            if (writeonly) continue;
             try {
                 if(fs.existsSync(path)) {
                     return true
@@ -207,10 +195,11 @@ export class Union {
             };
 
             const j = this.fss.length - i - 1;
-            const [fs] = this.fss[j];
+            const [fs, {writeonly}] = this.fss[j];
             const func = fs.readdir;
 
             if(!func) iterate(i + 1, Error('Method not supported: readdir'));
+            else if(writeonly) iterate(i + 1, Error(`Writeonly enabled for vol '${i}': readdir`));
             else func.apply(fs, args);
         };
         iterate();
@@ -220,7 +209,8 @@ export class Union {
         let lastError: IUnionFsError | null = null;
         let result = new Map<string, readdirEntry>();
         for(let i = this.fss.length - 1; i >= 0; i--) {
-            const [fs] = this.fss[i];
+            const [fs, {writeonly}] = this.fss[i];
+            if (writeonly) continue;
             try {
                 if(!fs.readdirSync) throw Error(`Method not supported: "readdirSync" with args "${args}"`);
                 for (const res of fs.readdirSync.apply(fs, args)) {
@@ -244,7 +234,8 @@ export class Union {
         let lastError: IUnionFsError | null = null;
         let result = new Map<string, readdirEntry>();
         for(let i = this.fss.length - 1; i >= 0; i--) {
-            const [fs] = this.fss[i];
+            const [fs, {writeonly}] = this.fss[i];
+            if (writeonly) continue;
             try {
                 if(!fs.promises || !fs.promises.readdir) throw Error(`Method not supported: "readdirSync" with args "${args}"`);
                 for (const res of await fs.promises.readdir.apply(fs, args)) {
@@ -282,7 +273,8 @@ export class Union {
 
     public createReadStream = (path: string) => {
         let lastError = null;
-        for (const [fs] of this.fss) {
+        for (const [fs, {writeonly}] of this.fss) {
+            if (writeonly) continue;
             try {
                 if(!fs.createReadStream) throw Error(`Method not supported: "createReadStream"`);
 
@@ -308,7 +300,8 @@ export class Union {
 
     public createWriteStream = (path: string) => {
         let lastError = null;
-        for (const [fs] of this.fss) {
+        for (const [fs, {readonly}] of this.fss) {
+            if (readonly) continue;
             try {
                 if(!fs.createWriteStream) throw Error(`Method not supported: "createWriteStream"`);
 
@@ -338,22 +331,125 @@ export class Union {
      * @param fs the filesystem interface to be added to the queue of FS's
      * @returns this instance of a unionFS
      */
-    use(fs: IFS, options: VolOptions = {readonly: false}): this {
-        this.fss.push([fs, options]);
+    use(fs: IFS, options: VolOptions = {}): this {
+        this.fss.push([fs, options, this.createMethods(fs, options)]);
         return this;
     }
 
+    /**
+     * At the time of the [[use]] call, we create our sync, async and promise methods
+     * for performance reasons
+     *
+     * @param fs
+     * @param options
+     */
+    private createMethods(fs: IFS, options: VolOptions): FSMethodStack {
+        const noop = undefined
+        const createFunc = (method: string) => {
+            if (!fs[method]) return (...args: any[]) => { throw new Error(`Method not supported: "${method}" with args "${args}"`); };
+            return (...args: any[]) => fs[method as string].apply(fs, args);
+        }
+        switch (true) {
+            case options.readonly:
+                return {
+                    sync: {
+                        ...fsSyncMethodsReadonly.reduce((acc, method) => {acc[method] = createFunc(method); return acc;}, {}),
+                        ...fsSyncMethodsWriteonly.reduce((acc, method) => {acc[method] = noop; return acc;}, {}),
+                    },
+                    async: {
+                        ...fsAsyncMethodsReadonly.reduce((acc, method) => {acc[method] = createFunc(method); return acc;}, {}),
+                        ...fsAsyncMethodsWriteonly.reduce((acc, method) => {acc[method] = noop; return acc;}, {}),
+                    },
+                    promise: {
+                        ...fsPromiseMethodsReadonly.reduce((acc, method) => {
+                            const promises = fs.promises;
+                            if (!promises || !promises[method]) {
+                                acc[method] = (...args: any) => {
+                                    throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
+                                }
+                                return acc
+                            }
+                            acc[method] = (...args: any) => promises[method as string].apply(fs, args);
+                            return acc;
+                        }, {}),
+                        ...fsPromiseMethodsWriteonly.reduce((acc, method) => {acc[method] = noop; return acc;}, {}),
+                    },
+                }
+                case options.writeonly:
+                    return {
+                    sync: {
+                        ...fsSyncMethodsReadonly.reduce((acc, method) => {acc[method] = noop; return acc;}, {}),
+                        ...fsSyncMethodsWriteonly.reduce((acc, method) => {acc[method] = createFunc(method); return acc;}, {}),
+                    },
+                    async: {
+                        ...fsAsyncMethodsReadonly.reduce((acc, method) => {acc[method] = noop; return acc;}, {}),
+                        ...fsAsyncMethodsWriteonly.reduce((acc, method) => {acc[method] = createFunc(method); return acc;}, {}),
+                    },
+                    promise: {
+                        ...fsPromiseMethodsReadonly.reduce((acc, method) => {acc[method] = noop; return acc;}, {}),
+                        ...fsPromiseMethodsWriteonly.reduce((acc, method) => {
+                            const promises = fs.promises;
+                            if (!promises || !promises[method]) {
+                                acc[method] = (...args: any) => {
+                                    throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
+                                }
+                                return acc
+                            }
+                            acc[method] = (...args: any) => promises[method as string].apply(fs, args);
+                            return acc;
+                        }, {}),
+                    },
+                }
+            default:
+                return {
+                    sync: {
+                        ...fsSyncMethodsReadonly.reduce((acc, method) => {acc[method] = createFunc(method); return acc;}, {}),
+                        ...fsSyncMethodsWriteonly.reduce((acc, method) => {acc[method] = createFunc(method); return acc;}, {}),
+                    },
+                    async: {
+                        ...fsAsyncMethodsReadonly.reduce((acc, method) => {acc[method] = createFunc(method); return acc;}, {}),
+                        ...fsAsyncMethodsWriteonly.reduce((acc, method) => {acc[method] = createFunc(method); return acc;}, {}),
+                    },
+                    promise: {
+                        ...fsPromiseMethodsReadonly.reduce((acc, method) => {
+                            const promises = fs.promises;
+                            if (!promises || !promises[method]) {
+                                acc[method] = (...args: any) => {
+                                    throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
+                                }
+                                return acc
+                            }
+                            acc[method] = (...args: any) => promises[method as string].apply(fs, args);
+                            return acc;
+                        }, {}),
+                        ...fsPromiseMethodsWriteonly.reduce((acc, method) => {
+                            const promises = fs.promises;
+                            if (!promises || !promises[method]) {
+                                acc[method] = (...args: any) => {
+                                    throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
+                                }
+                                return acc
+                            }
+                            acc[method] = (...args: any) => promises[method as string].apply(fs, args);
+                            return acc;
+                        }, {}),
+                },
+            }
+        }
+    }
+
     private syncMethod(method: string, args: any[]) {
+        if (!this.fss.length) throw new Error('No file systems attached')
         let lastError: IUnionFsError | null = null;
         for(let i = this.fss.length - 1; i >= 0; i--) {
-            const [fs, {readonly = false}] = this.fss[i];
+            const [_fs, _options, methodStack] = this.fss[i];
             try {
-                if(!fs[method]) throw Error(`Method not supported: "${method}" with args "${args}"`);
-                return fs[method].apply(fs, args);
+                if (!methodStack['sync'][method]) continue;
+                return methodStack['sync'][method](...args)
             } catch(err) {
                 err.prev = lastError;
                 lastError = err;
-                if(!i && !(readonly && isWriteMethod(method))) { // last one
+                if(!i) { // last one
                     throw err;
                 } else {
                     // Ignore error...
@@ -380,7 +476,7 @@ export class Union {
 
             // Already tried all file systems, return the last error.
             if(i >= this.fss.length) { // last one
-                if(cb) cb(err || Error('No file systems attached.'));
+                if(cb) cb(err ?? (!this.fss.length ? new Error('No file systems attached.') : undefined));
                 return;
             }
 
@@ -391,32 +487,25 @@ export class Union {
             };
 
             const j = this.fss.length - i - 1;
-            const [fs] = this.fss[j];
-            const func = fs[method];
+            const [_fs, _options, fsMethodStack] = this.fss[j];
+            const func = fsMethodStack['async'][method]
 
-            if(!func) iterate(i + 1, Error('Method not supported: ' + method));
-            else func.apply(fs, args);
+            if(!func) iterate(i + 1);
+            else func(...args);
         };
         iterate();
     }
 
     async promiseMethod(method: string, args: any[]) {
+        if (!this.fss.length) throw new Error('No file systems attached')
         let lastError = null;
 
         for (let i = this.fss.length - 1; i >= 0; i--) {
-            const [fs] = this.fss[i];
 
-            const promises = fs.promises;
-
+            const [_fs, _options, fsMethodStack] = this.fss[i];
             try {
-                if (!promises || !promises[method]) {
-                    throw Error(
-                      `Promise of method not supported: "${String(method)}" with args "${args}"`
-                    );
-                }
-
-                // return promises[method](...args);
-                return await promises[method].apply(promises, args);
+                const func = fsMethodStack['promise'][method]
+                return await func(...args);
             } catch (err) {
                 err.prev = lastError;
                 lastError = err;
