@@ -7,3 +7,4 @@ package-lock.json
 /lib/
 /demo/**/*.js
 /src/**/*.js
+*.test.ts.test
