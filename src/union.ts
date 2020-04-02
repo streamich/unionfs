@@ -346,6 +346,7 @@ export class Union {
    * @returns this instance of a unionFS
    */
   use(fs: IFS, options: VolOptions = {}): this {
+    if (options.readonly && options.writeonly) throw new Error("Logically, options cannot contain both readonly and writeonly")
     this.fss.push([fs, options, this.createMethods(fs, options)]);
     return this;
   }
@@ -357,7 +358,7 @@ export class Union {
    * @param fs
    * @param options
    */
-  private createMethods(fs: IFS, options: VolOptions): FSMethodStack {
+  private createMethods(fs: IFS, {readonly, writeonly}: VolOptions): FSMethodStack {
     const noop = undefined;
     const createFunc = (method: string) => {
       if (!fs[method])
@@ -366,134 +367,57 @@ export class Union {
         };
       return (...args: any[]) => fs[method as string].apply(fs, args);
     };
-    switch (true) {
-      case options.readonly:
-        return {
-          sync: {
-            ...fsSyncMethodsReadonly.reduce((acc, method) => {
-              acc[method] = createFunc(method);
-              return acc;
-            }, {}),
-            ...fsSyncMethodsWriteonly.reduce((acc, method) => {
-              acc[method] = noop;
-              return acc;
-            }, {}),
-          },
-          async: {
-            ...fsAsyncMethodsReadonly.reduce((acc, method) => {
-              acc[method] = createFunc(method);
-              return acc;
-            }, {}),
-            ...fsAsyncMethodsWriteonly.reduce((acc, method) => {
-              acc[method] = noop;
-              return acc;
-            }, {}),
-          },
-          promise: {
-            ...fsPromiseMethodsReadonly.reduce((acc, method) => {
-              const promises = fs.promises;
-              if (!promises || !promises[method]) {
-                acc[method] = (...args: any) => {
-                  throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
-                };
-                return acc;
-              }
-              acc[method] = (...args: any) => promises[method as string].apply(fs, args);
-              return acc;
-            }, {}),
-            ...fsPromiseMethodsWriteonly.reduce((acc, method) => {
-              acc[method] = noop;
-              return acc;
-            }, {}),
-          },
-        };
-      case options.writeonly:
-        return {
-          sync: {
-            ...fsSyncMethodsReadonly.reduce((acc, method) => {
-              acc[method] = noop;
-              return acc;
-            }, {}),
-            ...fsSyncMethodsWriteonly.reduce((acc, method) => {
-              acc[method] = createFunc(method);
-              return acc;
-            }, {}),
-          },
-          async: {
-            ...fsAsyncMethodsReadonly.reduce((acc, method) => {
-              acc[method] = noop;
-              return acc;
-            }, {}),
-            ...fsAsyncMethodsWriteonly.reduce((acc, method) => {
-              acc[method] = createFunc(method);
-              return acc;
-            }, {}),
-          },
-          promise: {
-            ...fsPromiseMethodsReadonly.reduce((acc, method) => {
-              acc[method] = noop;
-              return acc;
-            }, {}),
-            ...fsPromiseMethodsWriteonly.reduce((acc, method) => {
-              const promises = fs.promises;
-              if (!promises || !promises[method]) {
-                acc[method] = (...args: any) => {
-                  throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
-                };
-                return acc;
-              }
-              acc[method] = (...args: any) => promises[method as string].apply(fs, args);
-              return acc;
-            }, {}),
-          },
-        };
-      default:
-        return {
-          sync: {
-            ...fsSyncMethodsReadonly.reduce((acc, method) => {
-              acc[method] = createFunc(method);
-              return acc;
-            }, {}),
-            ...fsSyncMethodsWriteonly.reduce((acc, method) => {
-              acc[method] = createFunc(method);
-              return acc;
-            }, {}),
-          },
-          async: {
-            ...fsAsyncMethodsReadonly.reduce((acc, method) => {
-              acc[method] = createFunc(method);
-              return acc;
-            }, {}),
-            ...fsAsyncMethodsWriteonly.reduce((acc, method) => {
-              acc[method] = createFunc(method);
-              return acc;
-            }, {}),
-          },
-          promise: {
-            ...fsPromiseMethodsReadonly.reduce((acc, method) => {
-              const promises = fs.promises;
-              if (!promises || !promises[method]) {
-                acc[method] = (...args: any) => {
-                  throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
-                };
-                return acc;
-              }
-              acc[method] = (...args: any) => promises[method as string].apply(fs, args);
-              return acc;
-            }, {}),
-            ...fsPromiseMethodsWriteonly.reduce((acc, method) => {
-              const promises = fs.promises;
-              if (!promises || !promises[method]) {
-                acc[method] = (...args: any) => {
-                  throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
-                };
-                return acc;
-              }
-              acc[method] = (...args: any) => promises[method as string].apply(fs, args);
-              return acc;
-            }, {}),
-          },
-        };
+    return {
+      sync: {
+        ...fsSyncMethodsReadonly.reduce((acc, method) => {
+          // acc[method] = createFunc(method);
+          acc[method] = writeonly ? noop : createFunc(method);
+          return acc;
+        }, {}),
+        ...fsSyncMethodsWriteonly.reduce((acc, method) => {
+          // acc[method] = noop;
+          acc[method] = readonly ? noop : createFunc(method);
+          return acc;
+        }, {}),
+      },
+      async: {
+        ...fsAsyncMethodsReadonly.reduce((acc, method) => {
+          // acc[method] = createFunc(method);
+          acc[method] = writeonly ? noop : createFunc(method);
+          return acc;
+        }, {}),
+        ...fsAsyncMethodsWriteonly.reduce((acc, method) => {
+          // acc[method] = noop;
+          acc[method] = readonly ? noop : createFunc(method);
+          return acc;
+        }, {}),
+      },
+      promise: {
+        ...fsPromiseMethodsReadonly.reduce((acc, method) => {
+          const promises = fs.promises;
+          if (!promises || !promises[method]) {
+            acc[method] = (...args: any) => {
+              throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
+            };
+            return acc;
+          }
+          // acc[method] = (...args: any) => promises[method as string].apply(fs, args);
+          acc[method] = writeonly ? noop : (...args: any) => promises[method as string].apply(fs, args);
+          return acc;
+        }, {}),
+        ...fsPromiseMethodsWriteonly.reduce((acc, method) => {
+          const promises = fs.promises;
+          if (!promises || !promises[method]) {
+            acc[method] = (...args: any) => {
+              throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
+            };
+            return acc;
+          }
+          // acc[method] = noop;
+          acc[method] = readonly ? noop : (...args: any) => promises[method as string].apply(fs, args);
+          return acc;
+        }, {}),
+      },
     }
   }
 

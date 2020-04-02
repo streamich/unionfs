@@ -4,6 +4,13 @@ import * as fs from 'fs';
 
 describe('union', () => {
   describe('Union', () => {
+    describe('options', () => {
+      it('throws error when readonly and writeonly both true', () => {
+        const union = new Union()
+        const vol1 = new Volume()
+        expect(() => union.use(vol1 as any, {readonly: true, writeonly: true})).toThrowError("Logically, options cannot contain both readonly and writeonly");
+      });
+    })
     describe('sync methods', () => {
       it('Basic one file system', () => {
         const vol = Volume.fromJSON({ '/foo': 'bar' });
