@@ -113,7 +113,6 @@ export class Union {
 
     for (let method of SPECIAL_METHODS.values()) {
       // bind special methods to support
-      // const { method } = ufs;
       this[method] = this[method].bind(this);
     }
   }
@@ -370,24 +369,20 @@ export class Union {
     return {
       sync: {
         ...fsSyncMethodsReadonly.reduce((acc, method) => {
-          // acc[method] = createFunc(method);
           acc[method] = writeonly ? noop : createFunc(method);
           return acc;
         }, {}),
         ...fsSyncMethodsWriteonly.reduce((acc, method) => {
-          // acc[method] = noop;
           acc[method] = readonly ? noop : createFunc(method);
           return acc;
         }, {}),
       },
       async: {
         ...fsAsyncMethodsReadonly.reduce((acc, method) => {
-          // acc[method] = createFunc(method);
           acc[method] = writeonly ? noop : createFunc(method);
           return acc;
         }, {}),
         ...fsAsyncMethodsWriteonly.reduce((acc, method) => {
-          // acc[method] = noop;
           acc[method] = readonly ? noop : createFunc(method);
           return acc;
         }, {}),
@@ -401,7 +396,6 @@ export class Union {
             };
             return acc;
           }
-          // acc[method] = (...args: any) => promises[method as string].apply(fs, args);
           acc[method] = writeonly ? noop : (...args: any) => promises[method as string].apply(fs, args);
           return acc;
         }, {}),
@@ -413,7 +407,6 @@ export class Union {
             };
             return acc;
           }
-          // acc[method] = noop;
           acc[method] = readonly ? noop : (...args: any) => promises[method as string].apply(fs, args);
           return acc;
         }, {}),
