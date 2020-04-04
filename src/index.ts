@@ -3,7 +3,7 @@ import { IFS } from './fs';
 export * from './lists'
 
 export interface IUnionFs extends IFS {
-  use: (fs: IFS, options: VolOptions) => this;
+  use: (fs: IFS, options?: VolOptions) => this;
 }
 
 export const Union = (_Union as any) as new () => IUnionFs;
