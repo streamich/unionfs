@@ -23,8 +23,6 @@
   },
   "scripts": {
     "build": "tsc -p .",
-    "prettier": "prettier --ignore-path .gitignore --write \"src/**/*.{ts,js}\"",
-    "prettier:diff": "prettier -l \"src/**/*.{ts,js}\"",
     "test": "jest",
     "test-watch": "jest --watch",
     "test-coverage": "jest --coverage",
