@@ -1,4 +1,4 @@
-export const fsSyncMethodsWriteonly = [
+export const fsSyncMethodsWrite = [
   'appendFileSync',
   'chmodSync',
   'chownSync',
@@ -27,7 +27,7 @@ export const fsSyncMethodsWriteonly = [
   'writeSync',
 ] as const;
 
-export const fsSyncMethodsReadonly = [
+export const fsSyncMethodsRead = [
   'accessSync',
   'createReadStream',
   'existsSync',
@@ -41,7 +41,7 @@ export const fsSyncMethodsReadonly = [
   'realpathSync',
   'statSync',
 ] as const;
-export const fsAsyncMethodsReadonly = [
+export const fsAsyncMethodsRead = [
   'access',
   'exists',
   'fstat',
@@ -55,7 +55,7 @@ export const fsAsyncMethodsReadonly = [
   'watch',
   'watchFile',
 ] as const;
-export const fsAsyncMethodsWriteonly = [
+export const fsAsyncMethodsWrite = [
   'appendFile',
   'chmod',
   'chown',
@@ -85,7 +85,7 @@ export const fsAsyncMethodsWriteonly = [
   'writeFile',
 ] as const;
 
-export const fsPromiseMethodsReadonly = [
+export const fsPromiseMethodsRead = [
   'access',
   'open',
   'opendir',
@@ -95,7 +95,7 @@ export const fsPromiseMethodsReadonly = [
   'realpath',
 ] as const;
 
-export const fsPromiseMethodsWriteonly = [
+export const fsPromiseMethodsWrite = [
   'appendFile',
   'chmod',
   'chown',

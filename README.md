@@ -20,7 +20,7 @@ ufs
 ufs.readFileSync(/* ... */);
 ```
 
-This module allows you mark volumes as `readonly`/`writeonly` to prevent unwanted mutating of volumes
+This module allows you mark volumes as `readable`/`writeable` (both defaulting to true) to prevent unwanted mutating of volumes
 
 ```js
 import {ufs} from 'unionfs';
@@ -28,8 +28,8 @@ import {fs as fs1} from 'memfs';
 import * as fs2 from 'fs';
 
 ufs
-    .use(fs1, {readonly: true})
-    .use(fs2, {writeonly: true});
+    .use(fs1, {writeable: false})
+    .use(fs2, {readable: false});
 
 ufs.writeFileSync(/* ... */); // fs2 will "collect" mutations; fs1 will remain unchanged
 ```

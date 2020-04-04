@@ -2,12 +2,12 @@ import { FSWatcher, Dirent } from 'fs';
 import { IFS } from './fs';
 import { Readable, Writable } from 'stream';
 import {
-  fsSyncMethodsWriteonly,
-  fsSyncMethodsReadonly,
-  fsAsyncMethodsWriteonly,
-  fsAsyncMethodsReadonly,
-  fsPromiseMethodsWriteonly,
-  fsPromiseMethodsReadonly,
+  fsSyncMethodsWrite,
+  fsSyncMethodsRead,
+  fsAsyncMethodsWrite,
+  fsAsyncMethodsRead,
+  fsPromiseMethodsWrite,
+  fsPromiseMethodsRead,
 } from './lists';
 
 export interface IUnionFsError extends Error {
@@ -56,13 +56,13 @@ const createFSProxy = (watchers: FSWatcher[]) =>
   );
 
 export type VolOptions = {
-  readonly?: boolean;
-  writeonly?: boolean;
+  readable?: boolean;
+  writeable?: boolean;
 };
 
-type SyncMethodNames = typeof fsSyncMethodsReadonly[number] & typeof fsSyncMethodsWriteonly[number];
-type ASyncMethodNames = typeof fsSyncMethodsReadonly[number] & typeof fsAsyncMethodsWriteonly[number];
-type PromiseMethodNames = typeof fsPromiseMethodsReadonly[number] & typeof fsPromiseMethodsWriteonly[number];
+type SyncMethodNames = typeof fsSyncMethodsRead[number] & typeof fsSyncMethodsWrite[number];
+type ASyncMethodNames = typeof fsSyncMethodsRead[number] & typeof fsAsyncMethodsWrite[number];
+type PromiseMethodNames = typeof fsPromiseMethodsRead[number] & typeof fsPromiseMethodsWrite[number];
 type FSMethod = (args: any) => any;
 type FSMethodStack = {
   sync: {
@@ -88,20 +88,20 @@ export class Union {
   private promises: {} = {};
 
   constructor() {
-    for (let method of [...fsSyncMethodsReadonly, ...fsSyncMethodsWriteonly]) {
+    for (let method of [...fsSyncMethodsRead, ...fsSyncMethodsWrite]) {
       if (!SPECIAL_METHODS.has(method)) {
         // check we don't already have a property for this method
         this[method] = (...args) => this.syncMethod(method, args);
       }
     }
-    for (let method of [...fsAsyncMethodsReadonly, ...fsAsyncMethodsWriteonly]) {
+    for (let method of [...fsAsyncMethodsRead, ...fsAsyncMethodsWrite]) {
       if (!SPECIAL_METHODS.has(method)) {
         // check we don't already have a property for this method
         this[method] = (...args) => this.asyncMethod(method, args);
       }
     }
 
-    for (let method of [...fsPromiseMethodsReadonly, ...fsPromiseMethodsWriteonly]) {
+    for (let method of [...fsPromiseMethodsRead, ...fsPromiseMethodsWrite]) {
       if (method === 'readdir') {
         this.promises[method] = this.readdirPromise;
 
@@ -123,8 +123,8 @@ export class Union {
 
   public watch = (...args) => {
     const watchers: FSWatcher[] = [];
-    for (const [fs, { writeonly }] of this.fss) {
-      if (writeonly) continue;
+    for (const [fs, { readable }] of this.fss) {
+      if (readable === false) continue;
       try {
         const watcher = fs.watch.apply(fs, args);
         watchers.push(watcher);
@@ -138,8 +138,8 @@ export class Union {
   };
 
   public watchFile = (...args) => {
-    for (const [fs, { writeonly }] of this.fss) {
-      if (writeonly) continue;
+    for (const [fs, { readable }] of this.fss) {
+      if (readable === false) continue;
       try {
         fs.watchFile.apply(fs, args);
       } catch (e) {
@@ -149,8 +149,8 @@ export class Union {
   };
 
   public existsSync = (path: string) => {
-    for (const [fs, { writeonly }] of this.fss) {
-      if (writeonly) continue;
+    for (const [fs, { readable }] of this.fss) {
+      if (readable === false) continue;
       try {
         if (fs.existsSync(path)) {
           return true;
@@ -207,11 +207,11 @@ export class Union {
       };
 
       const j = this.fss.length - i - 1;
-      const [fs, { writeonly }] = this.fss[j];
+      const [fs, { readable }] = this.fss[j];
       const func = fs.readdir;
 
       if (!func) iterate(i + 1, Error('Method not supported: readdir'));
-      else if (writeonly) iterate(i + 1, Error(`Writeonly enabled for vol '${i}': readdir`));
+      else if (readable === false) iterate(i + 1, Error(`Readable disabled for vol '${i}': readdir`));
       else func.apply(fs, args);
     };
     iterate();
@@ -221,8 +221,8 @@ export class Union {
     let lastError: IUnionFsError | null = null;
     let result = new Map<string, readdirEntry>();
     for (let i = this.fss.length - 1; i >= 0; i--) {
-      const [fs, { writeonly }] = this.fss[i];
-      if (writeonly) continue;
+      const [fs, { readable }] = this.fss[i];
+      if (readable === false) continue;
       try {
         if (!fs.readdirSync) throw Error(`Method not supported: "readdirSync" with args "${args}"`);
         for (const res of fs.readdirSync.apply(fs, args)) {
@@ -247,8 +247,8 @@ export class Union {
     let lastError: IUnionFsError | null = null;
     let result = new Map<string, readdirEntry>();
     for (let i = this.fss.length - 1; i >= 0; i--) {
-      const [fs, { writeonly }] = this.fss[i];
-      if (writeonly) continue;
+      const [fs, { readable }] = this.fss[i];
+      if (readable === false) continue;
       try {
         if (!fs.promises || !fs.promises.readdir)
           throw Error(`Method not supported: "readdirSync" with args "${args}"`);
@@ -288,8 +288,8 @@ export class Union {
 
   public createReadStream = (path: string) => {
     let lastError = null;
-    for (const [fs, { writeonly }] of this.fss) {
-      if (writeonly) continue;
+    for (const [fs, { readable }] of this.fss) {
+      if (readable === false) continue;
       try {
         if (!fs.createReadStream) throw Error(`Method not supported: "createReadStream"`);
 
@@ -314,8 +314,8 @@ export class Union {
 
   public createWriteStream = (path: string) => {
     let lastError = null;
-    for (const [fs, { readonly }] of this.fss) {
-      if (readonly) continue;
+    for (const [fs, { writeable }] of this.fss) {
+      if (writeable === false) continue;
       try {
         if (!fs.createWriteStream) throw Error(`Method not supported: "createWriteStream"`);
 
@@ -345,10 +345,9 @@ export class Union {
    * @returns this instance of a unionFS
    */
   use(fs: IFS, options: VolOptions = {}): this {
-    if (options.readonly && options.writeonly) throw new Error("Logically, options cannot contain both readonly and writeonly")
-    this.fss.push([fs, options, this.createMethods(fs, options)]);
-    return this;
-  }
+      this.fss.push([fs, options, this.createMethods(fs, options)]);
+      return this;
+    }
 
   /**
    * At the time of the [[use]] call, we create our sync, async and promise methods
@@ -357,7 +356,7 @@ export class Union {
    * @param fs
    * @param options
    */
-  private createMethods(fs: IFS, {readonly, writeonly}: VolOptions): FSMethodStack {
+  private createMethods(fs: IFS, {readable = true, writeable = true}: VolOptions): FSMethodStack {
     const noop = undefined;
     const createFunc = (method: string) => {
       if (!fs[method])
@@ -368,27 +367,27 @@ export class Union {
     };
     return {
       sync: {
-        ...fsSyncMethodsReadonly.reduce((acc, method) => {
-          acc[method] = writeonly ? noop : createFunc(method);
+        ...fsSyncMethodsRead.reduce((acc, method) => {
+          acc[method] = readable ? createFunc(method) : noop;
           return acc;
         }, {}),
-        ...fsSyncMethodsWriteonly.reduce((acc, method) => {
-          acc[method] = readonly ? noop : createFunc(method);
+        ...fsSyncMethodsWrite.reduce((acc, method) => {
+          acc[method] = writeable ? createFunc(method) : noop;
           return acc;
         }, {}),
-      },
-      async: {
-        ...fsAsyncMethodsReadonly.reduce((acc, method) => {
-          acc[method] = writeonly ? noop : createFunc(method);
+    },
+    async: {
+        ...fsAsyncMethodsRead.reduce((acc, method) => {
+            acc[method] = readable ? createFunc(method) : noop;
           return acc;
         }, {}),
-        ...fsAsyncMethodsWriteonly.reduce((acc, method) => {
-          acc[method] = readonly ? noop : createFunc(method);
+        ...fsAsyncMethodsWrite.reduce((acc, method) => {
+            acc[method] = writeable ? createFunc(method) : noop;
           return acc;
         }, {}),
       },
       promise: {
-        ...fsPromiseMethodsReadonly.reduce((acc, method) => {
+        ...fsPromiseMethodsRead.reduce((acc, method) => {
           const promises = fs.promises;
           if (!promises || !promises[method]) {
             acc[method] = (...args: any) => {
@@ -396,10 +395,10 @@ export class Union {
             };
             return acc;
           }
-          acc[method] = writeonly ? noop : (...args: any) => promises[method as string].apply(fs, args);
+          acc[method] = readable ? (...args: any) => promises[method as string].apply(fs, args) : noop;
           return acc;
         }, {}),
-        ...fsPromiseMethodsWriteonly.reduce((acc, method) => {
+        ...fsPromiseMethodsWrite.reduce((acc, method) => {
           const promises = fs.promises;
           if (!promises || !promises[method]) {
             acc[method] = (...args: any) => {
@@ -407,7 +406,7 @@ export class Union {
             };
             return acc;
           }
-          acc[method] = readonly ? noop : (...args: any) => promises[method as string].apply(fs, args);
+          acc[method] = writeable ? (...args: any) => promises[method as string].apply(fs, args) : noop;
           return acc;
         }, {}),
       },
