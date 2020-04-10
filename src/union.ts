@@ -60,27 +60,20 @@ export type VolOptions = {
   writeable?: boolean;
 };
 
-type SyncMethodNames = typeof fsSyncMethodsRead[number] & typeof fsSyncMethodsWrite[number];
-type ASyncMethodNames = typeof fsSyncMethodsRead[number] & typeof fsAsyncMethodsWrite[number];
-type PromiseMethodNames = typeof fsPromiseMethodsRead[number] & typeof fsPromiseMethodsWrite[number];
-type FSMethod = (args: any) => any;
-type FSMethodStack = {
-  sync: {
-    [K in SyncMethodNames]: FSMethod | undefined;
-  };
-  async: {
-    [K in ASyncMethodNames]: FSMethod | undefined;
-  };
-  promise: {
-    [K in PromiseMethodNames]: FSMethod | undefined;
-  };
-};
+class SkipMethodError extends Error {
+  __proto__: Error;
+  constructor() {
+      const trueProto = new.target.prototype;
+      super('Method has been marked as noop by user options');
+      this.__proto__ = trueProto;
+  }
+}
 
 /**
  * Union object represents a stack of filesystems
  */
 export class Union {
-  private fss: [IFS, VolOptions, FSMethodStack][] = [];
+  private fss: [IFS, VolOptions][] = [];
 
   public ReadStream: typeof Readable | (new (...args: any[]) => Readable) = Readable;
   public WriteStream: typeof Writable | (new (...args: any[]) => Writable) = Writable;
@@ -345,9 +338,9 @@ export class Union {
    * @returns this instance of a unionFS
    */
   use(fs: IFS, options: VolOptions = {}): this {
-      this.fss.push([fs, options, this.createMethods(fs, options)]);
-      return this;
-    }
+    this.fss.push([this.createFS(fs, options), options]);
+    return this;
+  }
 
   /**
    * At the time of the [[use]] call, we create our sync, async and promise methods
@@ -356,72 +349,76 @@ export class Union {
    * @param fs
    * @param options
    */
-  private createMethods(fs: IFS, {readable = true, writeable = true}: VolOptions): FSMethodStack {
-    const noop = undefined;
-    const createFunc = (method: string) => {
+  private createFS(fs: IFS, { readable = true, writeable = true }: VolOptions): IFS {
+    const noop = (..._args: any[]) => {
+      throw new SkipMethodError();
+    };
+    const createFunc = (method: string): any => {
       if (!fs[method])
         return (...args: any[]) => {
           throw new Error(`Method not supported: "${method}" with args "${args}"`);
         };
       return (...args: any[]) => fs[method as string].apply(fs, args);
     };
+
     return {
-      sync: {
-        ...fsSyncMethodsRead.reduce((acc, method) => {
-          acc[method] = readable ? createFunc(method) : noop;
-          return acc;
-        }, {}),
-        ...fsSyncMethodsWrite.reduce((acc, method) => {
-          acc[method] = writeable ? createFunc(method) : noop;
-          return acc;
-        }, {}),
-    },
-    async: {
-        ...fsAsyncMethodsRead.reduce((acc, method) => {
-            acc[method] = readable ? createFunc(method) : noop;
-          return acc;
-        }, {}),
-        ...fsAsyncMethodsWrite.reduce((acc, method) => {
-            acc[method] = writeable ? createFunc(method) : noop;
-          return acc;
-        }, {}),
-      },
-      promise: {
-        ...fsPromiseMethodsRead.reduce((acc, method) => {
-          const promises = fs.promises;
-          if (!promises || !promises[method]) {
-            acc[method] = (...args: any) => {
-              throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
-            };
+      ...fs,
+      ...fsSyncMethodsRead.reduce((acc, method) => {
+        acc[method] = readable ? createFunc(method) : noop;
+        return acc;
+      }, {} as Record<typeof fsSyncMethodsRead[number], ReturnType<typeof createFunc>>),
+      ...fsSyncMethodsWrite.reduce((acc, method) => {
+        acc[method] = writeable ? createFunc(method) : noop;
+        return acc;
+      }, {} as Record<typeof fsSyncMethodsWrite[number], ReturnType<typeof createFunc>>),
+      ...fsAsyncMethodsRead.reduce((acc, method) => {
+        acc[method] = readable ? createFunc(method) : noop;
+        return acc;
+      }, {} as Record<typeof fsAsyncMethodsRead[number], ReturnType<typeof createFunc>>),
+      ...fsAsyncMethodsWrite.reduce((acc, method) => {
+        acc[method] = writeable ? createFunc(method) : noop;
+        return acc;
+      }, {} as Record<typeof fsAsyncMethodsWrite[number], ReturnType<typeof createFunc>>),
+      ...{
+        promises: {
+          ...fs.promises,
+          ...fsPromiseMethodsRead.reduce((acc, method) => {
+            const promises = fs.promises;
+            if (!promises || !promises[method]) {
+              acc[method] = (...args: any) => {
+                throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
+              };
+              return acc;
+            }
+            acc[method] = readable ? (...args: any) => promises[method as string].apply(fs, args) : noop;
             return acc;
-          }
-          acc[method] = readable ? (...args: any) => promises[method as string].apply(fs, args) : noop;
-          return acc;
-        }, {}),
-        ...fsPromiseMethodsWrite.reduce((acc, method) => {
-          const promises = fs.promises;
-          if (!promises || !promises[method]) {
-            acc[method] = (...args: any) => {
-              throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
-            };
+          }, {} as Record<typeof fsPromiseMethodsRead[number], ReturnType<typeof createFunc>>),
+          ...fsPromiseMethodsWrite.reduce((acc, method) => {
+            const promises = fs.promises;
+            if (!promises || !promises[method]) {
+              acc[method] = (...args: any) => {
+                throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
+              };
+              return acc;
+            }
+            acc[method] = writeable ? (...args: any) => promises[method as string].apply(fs, args) : noop;
             return acc;
-          }
-          acc[method] = writeable ? (...args: any) => promises[method as string].apply(fs, args) : noop;
-          return acc;
-        }, {}),
+          }, {} as Record<typeof fsPromiseMethodsWrite[number], ReturnType<typeof createFunc>>),
+        },
       },
-    }
+    };
   }
 
   private syncMethod(method: string, args: any[]) {
     if (!this.fss.length) throw new Error('No file systems attached');
     let lastError: IUnionFsError | null = null;
     for (let i = this.fss.length - 1; i >= 0; i--) {
-      const [_fs, _options, methodStack] = this.fss[i];
+      const [fs] = this.fss[i];
       try {
-        if (!methodStack['sync'][method]) continue;
-        return methodStack['sync'][method](...args);
+        if (!fs[method]) throw Error(`Method not supported: "${method}" with args "${args}"`);
+        return fs[method](...args);
       } catch (err) {
+        if (err instanceof SkipMethodError) continue;
         err.prev = lastError;
         lastError = err;
         if (!i) {
@@ -458,31 +455,45 @@ export class Union {
       }
 
       // Replace `callback` with our intermediate function.
-      args[lastarg] = function(err) {
+      args[lastarg] = function (err) {
+        if (err instanceof SkipMethodError) return iterate(i + 1);
         if (err) return iterate(i + 1, err);
         if (cb) cb.apply(cb, arguments);
       };
 
       const j = this.fss.length - i - 1;
-      const [_fs, _options, fsMethodStack] = this.fss[j];
-      const func = fsMethodStack['async'][method];
+      const [fs] = this.fss[j];
+      const func = fs[method];
 
-      if (!func) iterate(i + 1);
-      else func(...args);
+      if (!func) iterate(i + 1, Error('Method not supported: ' + method));
+      else {
+        try {
+          func(...args);
+        } catch (err) {
+          if (err instanceof SkipMethodError) return iterate(i + 1);
+          throw err
+        }
+      }
     };
     iterate();
   }
 
   async promiseMethod(method: string, args: any[]) {
-    if (!this.fss.length) throw new Error('No file systems attached');
     let lastError = null;
 
     for (let i = this.fss.length - 1; i >= 0; i--) {
-      const [_fs, _options, fsMethodStack] = this.fss[i];
+      const [theFs] = this.fss[i];
+
+      const promises = theFs.promises;
+
       try {
-        const func = fsMethodStack['promise'][method];
-        return await func(...args);
+        if (!promises || !promises[method]) {
+          throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
+        }
+
+        return await promises[method].apply(promises, args);
       } catch (err) {
+        if (err instanceof SkipMethodError) continue;
         err.prev = lastError;
         lastError = err;
         if (!i) {
