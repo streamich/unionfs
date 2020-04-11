@@ -367,19 +367,19 @@ export class Union {
       ...fsSyncMethodsRead.reduce((acc, method) => {
         acc[method] = readable ? createFunc(method) : noop;
         return acc;
-      }, {} as Record<typeof fsSyncMethodsRead[number], ReturnType<typeof createFunc>>),
+      }, {}),
       ...fsSyncMethodsWrite.reduce((acc, method) => {
         acc[method] = writable ? createFunc(method) : noop;
         return acc;
-      }, {} as Record<typeof fsSyncMethodsWrite[number], ReturnType<typeof createFunc>>),
+      }, {}),
       ...fsAsyncMethodsRead.reduce((acc, method) => {
         acc[method] = readable ? createFunc(method) : noop;
         return acc;
-      }, {} as Record<typeof fsAsyncMethodsRead[number], ReturnType<typeof createFunc>>),
+      }, {}),
       ...fsAsyncMethodsWrite.reduce((acc, method) => {
         acc[method] = writable ? createFunc(method) : noop;
         return acc;
-      }, {} as Record<typeof fsAsyncMethodsWrite[number], ReturnType<typeof createFunc>>),
+      }, {}),
       promises: {
         ...fs.promises,
         ...fsPromiseMethodsRead.reduce((acc, method) => {
@@ -392,7 +392,7 @@ export class Union {
           }
           acc[method] = readable ? (...args: any) => promises[method as string].apply(fs, args) : noop;
           return acc;
-        }, {} as Record<typeof fsPromiseMethodsRead[number], ReturnType<typeof createFunc>>),
+        }, {}),
         ...fsPromiseMethodsWrite.reduce((acc, method) => {
           const promises = fs.promises;
           if (!promises || !promises[method]) {
@@ -403,7 +403,7 @@ export class Union {
           }
           acc[method] = writable ? (...args: any) => promises[method as string].apply(fs, args) : noop;
           return acc;
-        }, {} as Record<typeof fsPromiseMethodsWrite[number], ReturnType<typeof createFunc>>),
+        }, {}),
       },
     };
   }
