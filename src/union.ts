@@ -57,10 +57,11 @@ const createFSProxy = (watchers: FSWatcher[]) =>
 
 export type VolOptions = {
   readable?: boolean;
-  writeable?: boolean;
+  writable?: boolean;
 };
 
 class SkipMethodError extends Error {
+  // ts weirdness - https://github.com/Microsoft/TypeScript/issues/13965#issuecomment-278570200
   __proto__: Error;
   constructor() {
       const trueProto = new.target.prototype;
@@ -307,8 +308,8 @@ export class Union {
 
   public createWriteStream = (path: string) => {
     let lastError = null;
-    for (const [fs, { writeable }] of this.fss) {
-      if (writeable === false) continue;
+    for (const [fs, { writable }] of this.fss) {
+      if (writable === false) continue;
       try {
         if (!fs.createWriteStream) throw Error(`Method not supported: "createWriteStream"`);
 
@@ -349,7 +350,7 @@ export class Union {
    * @param fs
    * @param options
    */
-  private createFS(fs: IFS, { readable = true, writeable = true }: VolOptions): IFS {
+  private createFS(fs: IFS, { readable = true, writable = true }: VolOptions): IFS {
     const noop = (..._args: any[]) => {
       throw new SkipMethodError();
     };
@@ -368,7 +369,7 @@ export class Union {
         return acc;
       }, {} as Record<typeof fsSyncMethodsRead[number], ReturnType<typeof createFunc>>),
       ...fsSyncMethodsWrite.reduce((acc, method) => {
-        acc[method] = writeable ? createFunc(method) : noop;
+        acc[method] = writable ? createFunc(method) : noop;
         return acc;
       }, {} as Record<typeof fsSyncMethodsWrite[number], ReturnType<typeof createFunc>>),
       ...fsAsyncMethodsRead.reduce((acc, method) => {
@@ -376,35 +377,33 @@ export class Union {
         return acc;
       }, {} as Record<typeof fsAsyncMethodsRead[number], ReturnType<typeof createFunc>>),
       ...fsAsyncMethodsWrite.reduce((acc, method) => {
-        acc[method] = writeable ? createFunc(method) : noop;
+        acc[method] = writable ? createFunc(method) : noop;
         return acc;
       }, {} as Record<typeof fsAsyncMethodsWrite[number], ReturnType<typeof createFunc>>),
-      ...{
-        promises: {
-          ...fs.promises,
-          ...fsPromiseMethodsRead.reduce((acc, method) => {
-            const promises = fs.promises;
-            if (!promises || !promises[method]) {
-              acc[method] = (...args: any) => {
-                throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
-              };
-              return acc;
-            }
-            acc[method] = readable ? (...args: any) => promises[method as string].apply(fs, args) : noop;
+      promises: {
+        ...fs.promises,
+        ...fsPromiseMethodsRead.reduce((acc, method) => {
+          const promises = fs.promises;
+          if (!promises || !promises[method]) {
+            acc[method] = (...args: any) => {
+              throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
+            };
             return acc;
-          }, {} as Record<typeof fsPromiseMethodsRead[number], ReturnType<typeof createFunc>>),
-          ...fsPromiseMethodsWrite.reduce((acc, method) => {
-            const promises = fs.promises;
-            if (!promises || !promises[method]) {
-              acc[method] = (...args: any) => {
-                throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
-              };
-              return acc;
-            }
-            acc[method] = writeable ? (...args: any) => promises[method as string].apply(fs, args) : noop;
+          }
+          acc[method] = readable ? (...args: any) => promises[method as string].apply(fs, args) : noop;
+          return acc;
+        }, {} as Record<typeof fsPromiseMethodsRead[number], ReturnType<typeof createFunc>>),
+        ...fsPromiseMethodsWrite.reduce((acc, method) => {
+          const promises = fs.promises;
+          if (!promises || !promises[method]) {
+            acc[method] = (...args: any) => {
+              throw Error(`Promise of method not supported: "${String(method)}" with args "${args}"`);
+            };
             return acc;
-          }, {} as Record<typeof fsPromiseMethodsWrite[number], ReturnType<typeof createFunc>>),
-        },
+          }
+          acc[method] = writable ? (...args: any) => promises[method as string].apply(fs, args) : noop;
+          return acc;
+        }, {} as Record<typeof fsPromiseMethodsWrite[number], ReturnType<typeof createFunc>>),
       },
     };
   }
