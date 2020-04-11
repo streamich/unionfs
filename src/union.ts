@@ -60,15 +60,6 @@ export type VolOptions = {
   writable?: boolean;
 };
 
-class SkipMethodError extends Error {
-  // ts weirdness - https://github.com/Microsoft/TypeScript/issues/13965#issuecomment-278570200
-  __proto__: Error;
-  constructor() {
-      const trueProto = new.target.prototype;
-      super('Method has been marked as noop by user options');
-      this.__proto__ = trueProto;
-  }
-}
 
 /**
  * Union object represents a stack of filesystems
@@ -351,8 +342,8 @@ export class Union {
    * @param options
    */
   private createFS(fs: IFS, { readable = true, writable = true }: VolOptions): IFS {
-    const noop = (..._args: any[]) => {
-      throw new SkipMethodError();
+    const createErroringFn = (state: 'readable' | 'writable') => (...args: any[]) => {
+      throw new Error(`Filesystem is not ${state}`);
     };
     const createFunc = (method: string): any => {
       if (!fs[method])
@@ -365,19 +356,19 @@ export class Union {
     return {
       ...fs,
       ...fsSyncMethodsRead.reduce((acc, method) => {
-        acc[method] = readable ? createFunc(method) : noop;
+        acc[method] = readable ? createFunc(method) : createErroringFn('writable');
         return acc;
       }, {}),
       ...fsSyncMethodsWrite.reduce((acc, method) => {
-        acc[method] = writable ? createFunc(method) : noop;
+        acc[method] = writable ? createFunc(method) : createErroringFn('readable');
         return acc;
       }, {}),
       ...fsAsyncMethodsRead.reduce((acc, method) => {
-        acc[method] = readable ? createFunc(method) : noop;
+        acc[method] = readable ? createFunc(method) : createErroringFn('writable');
         return acc;
       }, {}),
       ...fsAsyncMethodsWrite.reduce((acc, method) => {
-        acc[method] = writable ? createFunc(method) : noop;
+        acc[method] = writable ? createFunc(method) : createErroringFn('readable');
         return acc;
       }, {}),
       promises: {
@@ -390,7 +381,7 @@ export class Union {
             };
             return acc;
           }
-          acc[method] = readable ? (...args: any) => promises[method as string].apply(fs, args) : noop;
+          acc[method] = readable ? (...args: any) => promises[method as string].apply(fs, args) : createErroringFn('writable');
           return acc;
         }, {}),
         ...fsPromiseMethodsWrite.reduce((acc, method) => {
@@ -401,7 +392,7 @@ export class Union {
             };
             return acc;
           }
-          acc[method] = writable ? (...args: any) => promises[method as string].apply(fs, args) : noop;
+          acc[method] = writable ? (...args: any) => promises[method as string].apply(fs, args) : createErroringFn('readable');
           return acc;
         }, {}),
       },
@@ -417,7 +408,6 @@ export class Union {
         if (!fs[method]) throw Error(`Method not supported: "${method}" with args "${args}"`);
         return fs[method](...args);
       } catch (err) {
-        if (err instanceof SkipMethodError) continue;
         err.prev = lastError;
         lastError = err;
         if (!i) {
@@ -455,7 +445,6 @@ export class Union {
 
       // Replace `callback` with our intermediate function.
       args[lastarg] = function (err) {
-        if (err instanceof SkipMethodError) return iterate(i + 1);
         if (err) return iterate(i + 1, err);
         if (cb) cb.apply(cb, arguments);
       };
@@ -469,8 +458,7 @@ export class Union {
         try {
           func(...args);
         } catch (err) {
-          if (err instanceof SkipMethodError) return iterate(i + 1);
-          throw err
+          iterate(i + 1, err);
         }
       }
     };
@@ -492,7 +480,6 @@ export class Union {
 
         return await promises[method].apply(promises, args);
       } catch (err) {
-        if (err instanceof SkipMethodError) continue;
         err.prev = lastError;
         lastError = err;
         if (!i) {

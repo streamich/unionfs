@@ -104,22 +104,22 @@ describe('union', () => {
           expect(vol2.readFileSync('/foo', 'utf8')).toEqual('bar');
         });
 
-        it('not throw error if write operation attempted with all volumes writable=false', () => {
+        it('throw error if write operation attempted with all volumes writable=false', () => {
           const vol1 = Volume.fromJSON({ '/foo': 'bar' });
           const vol2 = Volume.fromJSON({ '/foo': 'bar' });
           const ufs = new Union();
           ufs.use(vol1 as any, { writable: false }).use(vol2 as any, { writable: false });
 
-          expect(() => ufs.writeFileSync('/foo', 'bar')).not.toThrowError();
+          expect(() => ufs.writeFileSync('/foo', 'bar')).toThrowError();
         });
 
-        it('not throw error nor return value if read operation attempted with all volumes readable=false', () => {
+        it('throw error if read operation attempted with all volumes readable=false', () => {
           const vol1 = Volume.fromJSON({ '/foo': 'bar1' });
           const vol2 = Volume.fromJSON({ '/foo': 'bar2' });
           const ufs = new Union();
           ufs.use(vol1 as any, { readable: false }).use(vol2 as any, { readable: false });
 
-          expect(ufs.readFileSync('/foo')).toBeUndefined();
+          expect(() => ufs.readFileSync('/foo')).toThrowError();
         });
       });
 
@@ -316,26 +316,25 @@ describe('union', () => {
           });
         });
 
-        it('not throw error if write operation attempted with all volumes writable=false', done => {
+        it('throw error if write operation attempted with all volumes writable=false', done => {
           const vol1 = Volume.fromJSON({ '/foo': 'bar' });
           const vol2 = Volume.fromJSON({ '/foo': 'bar' });
           const ufs = new Union();
           ufs.use(vol1 as any, { writable: false }).use(vol2 as any, { writable: false });
           ufs.writeFile('/foo', 'bar', (err) => {
-            expect(err).toBeUndefined();
+            expect(err).toBeInstanceOf(Error);
             done();
           });
         });
 
-        it('not throw error nor return value if read operation attempted with all volumes readable=false', done => {
+        it('throw error if read operation attempted with all volumes readable=false', done => {
           const vol1 = Volume.fromJSON({ '/foo': 'bar1' });
           const vol2 = Volume.fromJSON({ '/foo': 'bar2' });
           const ufs = new Union();
           ufs.use(vol1 as any, { readable: false }).use(vol2 as any, { readable: false });
 
           ufs.readFile('/foo', 'utf8', (err, res) => {
-            expect(err).toBeUndefined();
-            expect(res).toBeUndefined();
+            expect(err).toBeInstanceOf(Error);
             done();
           });
         });
@@ -484,22 +483,22 @@ describe('union', () => {
           expect(vol2.readFileSync('/foo', 'utf8')).toEqual('bar');
         });
 
-        it('not throw error if write operation attempted with all volumes writable=false', () => {
+        it('throw error if write operation attempted with all volumes writable=false', () => {
           const vol1 = Volume.fromJSON({ '/foo': 'bar' });
           const vol2 = Volume.fromJSON({ '/foo': 'bar' });
           const ufs = new Union();
           ufs.use(vol1 as any, { writable: false }).use(vol2 as any, { writable: false });
 
-          expect(() => ufs.writeFileSync('/foo', 'bar')).not.toThrowError();
+          expect(() => ufs.writeFileSync('/foo', 'bar')).toThrowError();
         });
 
-        it('not throw error nor return value if read operation attempted with all volumes readable=false', () => {
+        it('throw error if read operation attempted with all volumes readable=false', () => {
           const vol1 = Volume.fromJSON({ '/foo': 'bar1' });
           const vol2 = Volume.fromJSON({ '/foo': 'bar2' });
           const ufs = new Union();
           ufs.use(vol1 as any, { readable: false }).use(vol2 as any, { readable: false });
 
-          expect(ufs.readFileSync('/foo')).toBeUndefined();
+          expect(() => ufs.readFileSync('/foo')).toThrowError();
         });
       });
 
