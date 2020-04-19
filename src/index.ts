@@ -1,6 +1,5 @@
 import { Union as _Union, VolOptions } from './union';
 import { IFS } from './fs';
-export * from './lists'
 
 export interface IUnionFs extends IFS {
   use: (fs: IFS, options?: VolOptions) => this;

@@ -76,6 +76,28 @@ describe('union', () => {
         });
       });
 
+      describe('when none of the volumes are readable', () => {
+        it('throws error when calling a read method', () => {
+          const vol1 = Volume.fromJSON({ '/foo': 'bar1' });
+          const vol2 = Volume.fromJSON({ '/foo': 'bar2' });
+          const ufs = new Union();
+          ufs.use(vol1 as any, { readable: false }).use(vol2 as any, { readable: false });
+
+          expect(() => ufs.readFileSync('/foo')).toThrowError();
+        });
+      });
+
+      describe('when none of the volumes are writable', () => {
+        it('throws error when calling a write method', () => {
+          const vol1 = Volume.fromJSON({ '/foo': 'bar' });
+          const vol2 = Volume.fromJSON({ '/foo': 'bar' });
+          const ufs = new Union();
+          ufs.use(vol1 as any, { writable: false }).use(vol2 as any, { writable: false });
+
+          expect(() => ufs.writeFileSync('/foo', 'bar')).toThrowError();
+        });
+      });
+
       describe('readable/writable', () => {
         it('writes to the last vol added', () => {
           const vol1 = Volume.fromJSON({});
@@ -86,40 +108,24 @@ describe('union', () => {
           expect(vol2.readFileSync('/foo', 'utf8')).toEqual('bar');
         });
 
-        it('writes to the latest added volume with writable=false vol', () => {
-          const vol1 = Volume.fromJSON({});
-          const vol2 = Volume.fromJSON({});
-          const ufs = new Union();
-          ufs.use(vol1 as any).use(vol2 as any, { writable: false });
-          ufs.writeFileSync('/foo', 'bar');
-          expect(vol1.readFileSync('/foo', 'utf8')).toEqual('bar');
-        });
-
         it('writes to the latest added writable vol', () => {
           const vol1 = Volume.fromJSON({});
           const vol2 = Volume.fromJSON({});
           const ufs = new Union();
           ufs.use(vol1 as any).use(vol2 as any, { readable: false });
           ufs.writeFileSync('/foo', 'bar');
+
           expect(vol2.readFileSync('/foo', 'utf8')).toEqual('bar');
         });
 
-        it('throw error if write operation attempted with all volumes writable=false', () => {
-          const vol1 = Volume.fromJSON({ '/foo': 'bar' });
-          const vol2 = Volume.fromJSON({ '/foo': 'bar' });
+        it('reads from the latest added readable vol', () => {
+          const vol1 = Volume.fromJSON({'/foo': 'bar'});
+          const vol2 = Volume.fromJSON({});
           const ufs = new Union();
-          ufs.use(vol1 as any, { writable: false }).use(vol2 as any, { writable: false });
+          ufs.use(vol1 as any).use(vol2 as any, { readable: false });
 
-          expect(() => ufs.writeFileSync('/foo', 'bar')).toThrowError();
-        });
-
-        it('throw error if read operation attempted with all volumes readable=false', () => {
-          const vol1 = Volume.fromJSON({ '/foo': 'bar1' });
-          const vol2 = Volume.fromJSON({ '/foo': 'bar2' });
-          const ufs = new Union();
-          ufs.use(vol1 as any, { readable: false }).use(vol2 as any, { readable: false });
-
-          expect(() => ufs.readFileSync('/foo')).toThrowError();
+          expect(ufs.readFileSync('/foo', 'utf8')).toEqual('bar');
+          expect(vol1.readFileSync('/foo', 'utf8')).toEqual('bar');
         });
       });
 
@@ -276,6 +282,33 @@ describe('union', () => {
         });
       });
 
+      describe('when none of the volumes are readable', () => {
+        it('throws error when calling a read method', done => {
+          const vol1 = Volume.fromJSON({ '/foo': 'bar1' });
+          const vol2 = Volume.fromJSON({ '/foo': 'bar2' });
+          const ufs = new Union();
+          ufs.use(vol1 as any, { readable: false }).use(vol2 as any, { readable: false });
+
+          ufs.readFile('/foo', 'utf8', (err, res) => {
+            expect(err).toBeInstanceOf(Error);
+            done();
+          });
+        });
+      });
+
+      describe('when none of the volumes are writable', () => {
+        it('throws error when calling a write method', done => {
+          const vol1 = Volume.fromJSON({ '/foo': 'bar' });
+          const vol2 = Volume.fromJSON({ '/foo': 'bar' });
+          const ufs = new Union();
+          ufs.use(vol1 as any, { writable: false }).use(vol2 as any, { writable: false });
+          ufs.writeFile('/foo', 'bar', (err) => {
+            expect(err).toBeInstanceOf(Error);
+            done();
+          });
+        });
+      });
+
       describe('readable/writable', () => {
         it('writes to the last vol added', done => {
           const vol1 = Volume.fromJSON({});
@@ -316,28 +349,6 @@ describe('union', () => {
           });
         });
 
-        it('throw error if write operation attempted with all volumes writable=false', done => {
-          const vol1 = Volume.fromJSON({ '/foo': 'bar' });
-          const vol2 = Volume.fromJSON({ '/foo': 'bar' });
-          const ufs = new Union();
-          ufs.use(vol1 as any, { writable: false }).use(vol2 as any, { writable: false });
-          ufs.writeFile('/foo', 'bar', (err) => {
-            expect(err).toBeInstanceOf(Error);
-            done();
-          });
-        });
-
-        it('throw error if read operation attempted with all volumes readable=false', done => {
-          const vol1 = Volume.fromJSON({ '/foo': 'bar1' });
-          const vol2 = Volume.fromJSON({ '/foo': 'bar2' });
-          const ufs = new Union();
-          ufs.use(vol1 as any, { readable: false }).use(vol2 as any, { readable: false });
-
-          ufs.readFile('/foo', 'utf8', (err, res) => {
-            expect(err).toBeInstanceOf(Error);
-            done();
-          });
-        });
       });
 
       describe('readdir', () => {
@@ -455,6 +466,28 @@ describe('union', () => {
         await expect(ufs.promises.readFile('/foo', 'utf8')).rejects.toThrowError();
       });
 
+      describe('when none of the volumes are readable', () => {
+        it('throws error when calling a read method', () => {
+          const vol1 = Volume.fromJSON({ '/foo': 'bar1' });
+          const vol2 = Volume.fromJSON({ '/foo': 'bar2' });
+          const ufs = new Union();
+          ufs.use(vol1 as any, { readable: false }).use(vol2 as any, { readable: false });
+
+          expect(() => ufs.readFileSync('/foo')).toThrowError();
+        });
+      });
+
+      describe('when none of the volumes are writable', () => {
+        it('throws error when calling a write method', () => {
+          const vol1 = Volume.fromJSON({ '/foo': 'bar' });
+          const vol2 = Volume.fromJSON({ '/foo': 'bar' });
+          const ufs = new Union();
+          ufs.use(vol1 as any, { writable: false }).use(vol2 as any, { writable: false });
+
+          expect(() => ufs.writeFileSync('/foo', 'bar')).toThrowError();
+        });
+      });
+
       describe('readable/writable', () => {
         it('writes to the last vol added', () => {
           const vol1 = Volume.fromJSON({});
@@ -481,24 +514,6 @@ describe('union', () => {
           ufs.use(vol1 as any).use(vol2 as any, { readable: false });
           ufs.writeFileSync('/foo', 'bar');
           expect(vol2.readFileSync('/foo', 'utf8')).toEqual('bar');
-        });
-
-        it('throw error if write operation attempted with all volumes writable=false', () => {
-          const vol1 = Volume.fromJSON({ '/foo': 'bar' });
-          const vol2 = Volume.fromJSON({ '/foo': 'bar' });
-          const ufs = new Union();
-          ufs.use(vol1 as any, { writable: false }).use(vol2 as any, { writable: false });
-
-          expect(() => ufs.writeFileSync('/foo', 'bar')).toThrowError();
-        });
-
-        it('throw error if read operation attempted with all volumes readable=false', () => {
-          const vol1 = Volume.fromJSON({ '/foo': 'bar1' });
-          const vol2 = Volume.fromJSON({ '/foo': 'bar2' });
-          const ufs = new Union();
-          ufs.use(vol1 as any, { readable: false }).use(vol2 as any, { readable: false });
-
-          expect(() => ufs.readFileSync('/foo')).toThrowError();
         });
       });
 

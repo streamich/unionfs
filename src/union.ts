@@ -350,25 +350,25 @@ export class Union {
         return (...args: any[]) => {
           throw new Error(`Method not supported: "${method}" with args "${args}"`);
         };
-      return (...args: any[]) => fs[method as string].apply(fs, args);
+      return (...args: any[]) => fs[method as string](...args);
     };
 
     return {
       ...fs,
       ...fsSyncMethodsRead.reduce((acc, method) => {
-        acc[method] = readable ? createFunc(method) : createErroringFn('writable');
+        acc[method] = readable ? createFunc(method) : createErroringFn('readable');
         return acc;
       }, {}),
       ...fsSyncMethodsWrite.reduce((acc, method) => {
-        acc[method] = writable ? createFunc(method) : createErroringFn('readable');
+        acc[method] = writable ? createFunc(method) : createErroringFn('writable');
         return acc;
       }, {}),
       ...fsAsyncMethodsRead.reduce((acc, method) => {
-        acc[method] = readable ? createFunc(method) : createErroringFn('writable');
+        acc[method] = readable ? createFunc(method) : createErroringFn('readable');
         return acc;
       }, {}),
       ...fsAsyncMethodsWrite.reduce((acc, method) => {
-        acc[method] = writable ? createFunc(method) : createErroringFn('readable');
+        acc[method] = writable ? createFunc(method) : createErroringFn('writable');
         return acc;
       }, {}),
       promises: {
@@ -381,7 +381,7 @@ export class Union {
             };
             return acc;
           }
-          acc[method] = readable ? (...args: any) => promises[method as string].apply(fs, args) : createErroringFn('writable');
+          acc[method] = readable ? (...args: any) => promises[method as string].apply(fs, args) : createErroringFn('readable');
           return acc;
         }, {}),
         ...fsPromiseMethodsWrite.reduce((acc, method) => {
@@ -392,7 +392,7 @@ export class Union {
             };
             return acc;
           }
-          acc[method] = writable ? (...args: any) => promises[method as string].apply(fs, args) : createErroringFn('readable');
+          acc[method] = writable ? (...args: any) => promises[method as string].apply(fs, args) : createErroringFn('writable');
           return acc;
         }, {}),
       },
