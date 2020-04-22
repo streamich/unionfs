@@ -86,6 +86,7 @@ export const fsAsyncMethodsWrite = [
 export const fsPromiseMethodsRead = [
   'access',
   'open',
+  'opendir',
   'readdir',
   'readFile',
   'readlink',
