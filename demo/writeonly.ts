@@ -13,7 +13,7 @@ const vol1 = Volume.fromJSON({
 });
 const vol2 = Volume.fromJSON({});
 
-ufs.use(vol1 as any).use(vol2 as any, {writeonly: true})
+ufs.use(vol1 as any).use(vol2 as any, {writable: false})
 ufs.writeFileSync('/foo', 'bar')
 
 console.log(vol2.readFileSync('/foo', 'utf8')) // bar
