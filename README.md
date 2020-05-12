@@ -20,6 +20,20 @@ ufs
 ufs.readFileSync(/* ... */);
 ```
 
+This module allows you mark volumes as `readable`/`writable` (both defaulting to true) to prevent unwanted mutating of volumes
+
+```js
+import {ufs} from 'unionfs';
+import {fs as fs1} from 'memfs';
+import * as fs2 from 'fs';
+
+ufs
+    .use(fs1, {writable: false})
+    .use(fs2, {readable: false});
+
+ufs.writeFileSync(/* ... */); // fs2 will "collect" mutations; fs1 will remain unchanged
+```
+
 Use this module with [`memfs`][memfs] and [`linkfs`][linkfs].
 `memfs` allows you to create virtual in-memory file system. `linkfs` allows you to redirect `fs` paths.
 

@@ -1,8 +1,8 @@
-import { Union as _Union } from './union';
+import { Union as _Union, VolOptions } from './union';
 import { IFS } from './fs';
 
 export interface IUnionFs extends IFS {
-  use(fs: IFS): this;
+  use: (fs: IFS, options?: VolOptions) => this;
 }
 
 export const Union = (_Union as any) as new () => IUnionFs;
