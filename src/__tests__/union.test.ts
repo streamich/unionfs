@@ -2,6 +2,12 @@ import { Union } from '..';
 import { Volume, createFsFromVolume } from 'memfs';
 import * as fs from 'fs';
 
+function sleep(millisec: number): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    setTimeout(resolve, millisec);
+  });
+}
+
 describe('union', () => {
   describe('Union', () => {
     describe('sync methods', () => {
@@ -61,6 +67,23 @@ describe('union', () => {
           expect(mockCallback).toBeCalledWith('change', '/tmp/foo.js');
 
           watcher.close();
+        });
+
+        it('can watchFile and unwatchFile', async () => {
+          const memfs = Volume.fromJSON({ '/foo': '1' });
+          const ufs = new Union().use(memfs as any);
+          const mockCallback = jest.fn();
+          ufs.watchFile('/foo', { interval: 10 }, mockCallback);
+
+          memfs.writeFileSync('/foo', '2');
+          await sleep(100);
+          expect(mockCallback).toBeCalled();
+          mockCallback.mockClear();
+
+          ufs.unwatchFile('/foo');
+          memfs.writeFileSync('/foo', '3');
+          await sleep(100);
+          expect(mockCallback).not.toBeCalled();
         });
       });
 
@@ -145,7 +168,7 @@ describe('union', () => {
           ufs.use(vol as any);
           const files = ufs.readdirSync('/foo', { withFileTypes: true });
           expect(files[0]).toBeInstanceOf(createFsFromVolume(vol).Dirent);
-          expect(files.map(f => f.name)).toEqual(['bar', 'baz', 'zzz']);
+          expect(files.map((f) => f.name)).toEqual(['bar', 'baz', 'zzz']);
         });
 
         it('throws error when all fss fail', () => {
@@ -160,7 +183,7 @@ describe('union', () => {
       });
     });
     describe('async methods', () => {
-      it('Basic one file system', done => {
+      it('Basic one file system', (done) => {
         const vol = Volume.fromJSON({ '/foo': 'bar' });
         const ufs = new Union();
         ufs.use(vol as any);
@@ -180,7 +203,7 @@ describe('union', () => {
           expect(content).toBe('baz');
         });
       });
-      it('File not found', done => {
+      it('File not found', (done) => {
         const vol = Volume.fromJSON({ '/foo': 'bar' });
         const ufs = new Union();
         ufs.use(vol as any);
@@ -201,7 +224,7 @@ describe('union', () => {
         }
       });
 
-      it('No file systems attached', done => {
+      it('No file systems attached', (done) => {
         const ufs = new Union();
         ufs.stat('/foo2', (err, data) => {
           expect(err?.message).toBe('No file systems attached.');
@@ -209,7 +232,7 @@ describe('union', () => {
         });
       });
 
-      it('callbacks are only called once', done => {
+      it('callbacks are only called once', (done) => {
         const vol = Volume.fromJSON({
           '/foo/bar': 'bar',
         });
@@ -242,7 +265,7 @@ describe('union', () => {
           });
         });
 
-        it('reads multiple memfs correctly', done => {
+        it('reads multiple memfs correctly', (done) => {
           const vol = Volume.fromJSON({
             '/foo/bar': 'bar',
             '/foo/baz': 'baz',
@@ -261,7 +284,7 @@ describe('union', () => {
           });
         });
 
-        it('reads other fss when one fails', done => {
+        it('reads other fss when one fails', (done) => {
           const vol = Volume.fromJSON({
             '/foo/bar': 'bar',
             '/foo/baz': 'baz',
@@ -281,7 +304,7 @@ describe('union', () => {
           });
         });
 
-        it('honors the withFileTypes: true option', done => {
+        it('honors the withFileTypes: true option', (done) => {
           const vol = Volume.fromJSON({
             '/foo/bar': 'bar',
             '/foo/zzz': 'zzz',
@@ -292,12 +315,12 @@ describe('union', () => {
           ufs.use(vol as any);
           ufs.readdir('/foo', { withFileTypes: true }, (err, files) => {
             expect(files[0]).toBeInstanceOf(createFsFromVolume(vol).Dirent);
-            expect(files.map(f => f.name)).toEqual(['bar', 'baz', 'zzz']);
+            expect(files.map((f) => f.name)).toEqual(['bar', 'baz', 'zzz']);
             done();
           });
         });
 
-        it('throws error when all fss fail', done => {
+        it('throws error when all fss fail', (done) => {
           const vol = Volume.fromJSON({});
           const vol2 = Volume.fromJSON({});
 
@@ -413,7 +436,7 @@ describe('union', () => {
           ufs.use(vol as any);
           const files = await ufs.promises.readdir('/foo', { withFileTypes: true });
           expect(files[0]).toBeInstanceOf(createFsFromVolume(vol).Dirent);
-          expect(files.map(f => f.name)).toEqual(['bar', 'baz', 'zzz']);
+          expect(files.map((f) => f.name)).toEqual(['bar', 'baz', 'zzz']);
         });
 
         it('throws error when all fss fail', async () => {
