@@ -34,8 +34,8 @@
     "fs-monkey": "^1.0.0"
   },
   "devDependencies": {
-    "@semantic-release/changelog": "6.0.0",
-    "@semantic-release/git": "10.0.0",
+    "@semantic-release/changelog": "6.0.1",
+    "@semantic-release/git": "10.0.1",
     "@semantic-release/npm": "8.0.2",
     "@types/jest": "27.0.2",
     "@types/node": "11.15.54",
