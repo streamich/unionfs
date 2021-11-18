@@ -37,7 +37,7 @@
     "@semantic-release/changelog": "6.0.1",
     "@semantic-release/git": "10.0.1",
     "@semantic-release/npm": "8.0.3",
-    "@types/jest": "27.0.2",
+    "@types/jest": "27.0.3",
     "@types/node": "11.15.54",
     "jest": "27.3.1",
     "memfs": "3.3.0",
