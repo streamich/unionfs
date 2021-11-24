@@ -43,7 +43,7 @@
     "memfs": "3.3.0",
     "memory-fs": "0.5.0",
     "prettier": "2.4.1",
-    "semantic-release": "18.0.0",
+    "semantic-release": "18.0.1",
     "source-map-support": "0.5.21",
     "ts-jest": "27.0.7",
     "ts-node": "10.4.0",
