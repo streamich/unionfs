@@ -459,5 +459,57 @@ describe('union', () => {
         ufs.unlinkSync(realFile);
       });
     });
+
+    describe('additional props', () => {
+      it('adds F_OK from the fs', () => {
+        const vol = Volume.fromJSON({});
+        const fs = createFsFromVolume(vol);
+        const ufs = new Union();
+        ufs.use(fs as any);
+        expect(ufs.F_OK).toBe((fs as any).F_OK);
+      });
+      it('adds R_OK from the fs', () => {
+        const vol = Volume.fromJSON({});
+        const fs = createFsFromVolume(vol);
+        const ufs = new Union();
+        ufs.use(fs as any);
+        expect(ufs.R_OK).toBe((fs as any).R_OK);
+      });
+      it('adds W_OK from the fs', () => {
+        const vol = Volume.fromJSON({});
+        const fs = createFsFromVolume(vol);
+        const ufs = new Union();
+        ufs.use(fs as any);
+        expect(ufs.W_OK).toBe((fs as any).W_OK);
+      });
+      it('adds X_OK from the fs', () => {
+        const vol = Volume.fromJSON({});
+        const fs = createFsFromVolume(vol);
+        const ufs = new Union();
+        ufs.use(fs as any);
+        expect(ufs.X_OK).toBe((fs as any).X_OK);
+      });
+      it('adds constants from the fs', () => {
+        const vol = Volume.fromJSON({});
+        const fs = createFsFromVolume(vol);
+        const ufs = new Union();
+        ufs.use(fs as any);
+        expect(ufs.constants).toBe(fs.constants);
+      });
+      it('adds Stats from the fs', () => {
+        const vol = Volume.fromJSON({});
+        const fs = createFsFromVolume(vol);
+        const ufs = new Union();
+        ufs.use(fs as any);
+        expect(ufs.Stats).toBe(fs.Stats);
+      });
+      it('adds Dirent from the fs', () => {
+        const vol = Volume.fromJSON({});
+        const fs = createFsFromVolume(vol);
+        const ufs = new Union();
+        ufs.use(fs as any);
+        expect(ufs.Dirent).toBe(fs.Dirent);
+      });
+    });
   });
 });
