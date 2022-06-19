@@ -28,7 +28,8 @@
     "test-coverage": "jest --coverage",
     "semantic-release": "semantic-release",
     "prettier": "prettier --ignore-path .gitignore --write \"src/**/*.{ts,js}\"",
-    "prettier:diff": "prettier -l \"src/**/*.{ts,js}\""
+    "prettier:diff": "prettier -l \"src/**/*.{ts,js}\"",
+    "typecheck": "tsc -p ."
   },
   "dependencies": {
     "fs-monkey": "^1.0.0"
