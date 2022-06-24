@@ -75,6 +75,8 @@ describe('union', () => {
           const mockCallback = jest.fn();
           ufs.watchFile('/foo', { interval: 10 }, mockCallback);
 
+          await sleep(100);
+
           memfs.writeFileSync('/foo', '2');
           await sleep(100);
           expect(mockCallback).toBeCalled();
@@ -466,7 +468,7 @@ describe('union', () => {
         expect(ufs.createReadStream(__filename)).toHaveProperty('_readableState');
       });
 
-      it('can create Writable Streams', () => {
+      it('can create Writable Streams', async () => {
         const vol = Volume.fromJSON({ '/foo': 'bar' });
         const ufs = new Union();
         const realFile = __filename + '.test';
@@ -476,8 +478,12 @@ describe('union', () => {
         expect(vol.createWriteStream('/foo')).toHaveProperty('_writableState');
         expect(fs.createWriteStream(realFile)).toHaveProperty('_writableState');
 
+        await sleep(100);
+
         expect(ufs.createWriteStream('/foo')).toHaveProperty('_writableState');
         expect(ufs.createWriteStream(realFile)).toHaveProperty('_writableState');
+
+        await sleep(100);
 
         ufs.unlinkSync(realFile);
       });
