@@ -159,6 +159,21 @@ describe('union', () => {
           expect(ufs.readdirSync('/bar')).toEqual(['baz', 'qux']);
         });
 
+        it('reads other fss when one fails -- in both orders', () => {
+          const vol = Volume.fromJSON({});
+          const vol2 = Volume.fromJSON({});
+          vol2.mkdirSync('/b')
+          const ufs = new Union();
+          ufs.use(vol as any);
+          ufs.use(vol2 as any);
+          expect(ufs.readdirSync('/b')).toEqual([]);
+
+          const ufs2 = new Union();
+          ufs2.use(vol2 as any);
+          ufs2.use(vol as any);
+          expect(ufs2.readdirSync('/b')).toEqual([]);
+        });
+
         it('honors the withFileTypes: true option', () => {
           const vol = Volume.fromJSON({
             '/foo/bar': 'bar',

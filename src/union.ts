@@ -223,18 +223,23 @@ export class Union {
   public readdirSync = (...args): Array<readdirEntry> => {
     let lastError: IUnionFsError | null = null;
     let result = new Map<string, readdirEntry>();
+    let pathExists = false;
     for (let i = this.fss.length - 1; i >= 0; i--) {
       const fs = this.fss[i];
       try {
-        if (!fs.readdirSync) throw Error(`Method not supported: "readdirSync" with args "${args}"`);
+        if (!fs.readdirSync)
+          throw Error(
+            `Method not supported: "readdirSync" with args "${args}"`
+          );
         for (const res of fs.readdirSync.apply(fs, args)) {
           result.set(this.pathFromReaddirEntry(res), res);
         }
+        pathExists = true;
       } catch (err) {
         err.prev = lastError;
         lastError = err;
-        if (result.size === 0 && !i) {
-          // last one
+        if (!i && !pathExists) {
+          // Last one and the path didn't exist in any case above.
           throw err;
         } else {
           // Ignore error...
