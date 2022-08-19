@@ -177,23 +177,31 @@ export class Union {
 
     let lastError: IUnionFsError | null = null;
     let result = new Map<string, readdirEntry>();
+    let pathExists = false;
     const iterate = (i = 0, error?: IUnionFsError | null) => {
       if (error) {
         error.prev = lastError;
         lastError = error;
       }
 
-      // Already tried all file systems, return the last error.
+      // Already tried all file systems; return the last error if every attempt failed.
       if (i >= this.fss.length) {
         // last one
         if (cb) {
-          cb(error || Error('No file systems attached.'));
+          if(pathExists) {
+            cb(null, this.sortedArrayFromReaddirResult(result));
+          } else {
+            cb(error || Error('No file systems attached.'));
+          }
         }
         return;
       }
 
       // Replace `callback` with our intermediate function.
       args[lastarg] = (err, resArg: readdirEntry[]) => {
+        if(!err) {
+          pathExists = true;
+        }
         if (result.size === 0 && err) {
           return iterate(i + 1, err);
         }

@@ -159,10 +159,11 @@ describe('union', () => {
           expect(ufs.readdirSync('/bar')).toEqual(['baz', 'qux']);
         });
 
-        it('reads other fss when one fails -- in both orders', () => {
+        it('readdirSync reads other fss when one fails -- in both orders, and when directory is empty', () => {
           const vol = Volume.fromJSON({});
           const vol2 = Volume.fromJSON({});
           vol2.mkdirSync('/b')
+
           const ufs = new Union();
           ufs.use(vol as any);
           ufs.use(vol2 as any);
@@ -172,6 +173,27 @@ describe('union', () => {
           ufs2.use(vol2 as any);
           ufs2.use(vol as any);
           expect(ufs2.readdirSync('/b')).toEqual([]);
+        });
+
+      it('readdir reads other fss when one fails, and correctly handles case when either directory is empty', () => {
+          const vol = Volume.fromJSON({});
+          const vol2 = Volume.fromJSON({});
+          vol2.mkdirSync('/b')
+
+         const ufs = new Union();
+          ufs.use(vol as any);
+          ufs.use(vol2 as any);
+          expect(ufs.readdir('/b', (err, files) => {
+            expect(files).toEqual([])
+          }));
+
+          const ufs2 = new Union();
+          ufs2.use(vol2 as any);
+          ufs2.use(vol as any);
+          expect(ufs.readdir('/b', (err, files) => {
+            expect(files).toEqual([])
+          }));
+
         });
 
         it('honors the withFileTypes: true option', () => {
