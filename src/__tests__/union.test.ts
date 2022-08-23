@@ -159,6 +159,87 @@ describe('union', () => {
           expect(ufs.readdirSync('/bar')).toEqual(['baz', 'qux']);
         });
 
+        it('readdirSync reads other fss when one fails -- in both orders, and when directory is empty', () => {
+          const vol = Volume.fromJSON({});
+          const vol2 = Volume.fromJSON({});
+          vol2.mkdirSync('/b')
+
+          const ufs = new Union();
+          ufs.use(vol as any);
+          ufs.use(vol2 as any);
+          expect(ufs.readdirSync('/b')).toEqual([]);
+
+          const ufs2 = new Union();
+          ufs2.use(vol2 as any);
+          ufs2.use(vol as any);
+          expect(ufs2.readdirSync('/b')).toEqual([]);
+        });
+
+      it('readdir reads other fss when one fails, and correctly handles case when either directory is empty', () => {
+          const vol = Volume.fromJSON({});
+          const vol2 = Volume.fromJSON({});
+          vol2.mkdirSync('/b')
+
+         const ufs = new Union();
+          ufs.use(vol as any);
+          ufs.use(vol2 as any);
+          expect(ufs.readdir('/b', (err, files) => {
+            expect(files).toEqual([])
+          }));
+
+          const ufs2 = new Union();
+          ufs2.use(vol2 as any);
+          ufs2.use(vol as any);
+          expect(ufs.readdir('/b', (err, files) => {
+            expect(files).toEqual([])
+          }));
+
+        });
+
+        it('readdirSync on a file should raise ENOTDIR instead of ENOENT', () => {
+          const vol = Volume.fromJSON({
+            '/foo/bar': 'bar'
+          });
+          const vol2 = Volume.fromJSON({});
+          const ufs = new Union();
+          ufs.use(vol as any);
+          ufs.use(vol2 as any);
+          expect(()=>ufs.readdirSync("/foo/bar")).toThrow('ENOTDIR');
+
+          const ufs2 = new Union();
+          ufs2.use(vol2 as any);
+          ufs2.use(vol as any);
+          expect(()=>ufs2.readdirSync("/foo/bar")).toThrow('ENOTDIR');
+          // really not there:
+          expect(()=>ufs2.readdirSync("/foo/bar2")).toThrow('ENOENT');
+        });
+
+      describe('readdir on a file should raise ENOTDIR instead of ENOENT', () => {
+          const vol = Volume.fromJSON({
+            '/foo/bar': 'bar'
+          });
+          const vol2 = Volume.fromJSON({});
+          it("throws correct error", done => {
+            const ufs = new Union();
+            ufs.use(vol as any);
+            ufs.use(vol2 as any);
+            ufs.readdir("/foo/bar", (err) => {
+              expect(err?.code).toBe('ENOTDIR');
+              done();
+            });
+          });
+
+          it("throw correct error in other order", done => {
+            const ufs2 = new Union();
+            ufs2.use(vol2 as any);
+            ufs2.use(vol as any);
+            ufs2.readdir("/foo/bar", (err) => {
+              expect(err?.code).toBe('ENOTDIR');
+              done();
+            });
+          });
+        });
+
         it('honors the withFileTypes: true option', () => {
           const vol = Volume.fromJSON({
             '/foo/bar': 'bar',

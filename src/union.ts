@@ -20,6 +20,8 @@ const SPECIAL_METHODS = new Set([
   'unwatchFile',
 ]);
 
+const SPECIAL_ERRORS = new Set(["ENOTDIR", "EEXIST"]);
+
 const createFSProxy = (watchers: FSWatcher[]) =>
   new Proxy(
     {},
@@ -177,23 +179,39 @@ export class Union {
 
     let lastError: IUnionFsError | null = null;
     let result = new Map<string, readdirEntry>();
+    let pathExists = false;
     const iterate = (i = 0, error?: IUnionFsError | null) => {
       if (error) {
+        if (SPECIAL_ERRORS.has(error["code"])) {
+          // Immediately fail with this error.
+           // see comment in readdirSync
+          if (cb) {
+            cb(error);
+          }
+          return;
+        }
         error.prev = lastError;
         lastError = error;
       }
 
-      // Already tried all file systems, return the last error.
+      // Already tried all file systems; return the last error if every attempt failed.
       if (i >= this.fss.length) {
         // last one
         if (cb) {
-          cb(error || Error('No file systems attached.'));
+          if(pathExists) {
+            cb(null, this.sortedArrayFromReaddirResult(result));
+          } else {
+            cb(error || Error('No file systems attached.'));
+          }
         }
         return;
       }
 
       // Replace `callback` with our intermediate function.
       args[lastarg] = (err, resArg: readdirEntry[]) => {
+        if(!err) {
+          pathExists = true;
+        }
         if (result.size === 0 && err) {
           return iterate(i + 1, err);
         }
@@ -223,18 +241,30 @@ export class Union {
   public readdirSync = (...args): Array<readdirEntry> => {
     let lastError: IUnionFsError | null = null;
     let result = new Map<string, readdirEntry>();
+    let pathExists = false;
     for (let i = this.fss.length - 1; i >= 0; i--) {
       const fs = this.fss[i];
       try {
-        if (!fs.readdirSync) throw Error(`Method not supported: "readdirSync" with args "${args}"`);
+        if (!fs.readdirSync)
+          throw Error(
+            `Method not supported: "readdirSync" with args "${args}"`
+          );
         for (const res of fs.readdirSync.apply(fs, args)) {
           result.set(this.pathFromReaddirEntry(res), res);
         }
+        pathExists = true;
       } catch (err) {
+        if (SPECIAL_ERRORS.has(err.code)) {
+          // The file *does* exist in this filesystem in the union, but ENOTDIR happened.
+          // E.g., if you try to get a directory listing on a file one fs doesn't have the file and the
+          // the other fs has the file, then the one that has it throws ENOTDIR, which is what this
+          // function should throw.
+          throw err;
+        }
         err.prev = lastError;
         lastError = err;
-        if (result.size === 0 && !i) {
-          // last one
+        if (!i && !pathExists) {
+          // Last one and the path didn't exist in any case above.
           throw err;
         } else {
           // Ignore error...
@@ -356,6 +386,9 @@ export class Union {
         if (!fs[method]) throw Error(`Method not supported: "${method}" with args "${args}"`);
         return fs[method].apply(fs, args);
       } catch (err) {
+        if (SPECIAL_ERRORS.has(err["code"])) { // see comment in readdirSync
+          throw err;
+        }
         err.prev = lastError;
         lastError = err;
         if (!i) {
@@ -379,6 +412,12 @@ export class Union {
 
     let lastError: IUnionFsError | null = null;
     const iterate = (i = 0, err?: IUnionFsError) => {
+      if (err != null && SPECIAL_ERRORS.has(err?.["code"])) {  // see comment in readdirSync
+        if(cb) {
+          cb(err);
+        }
+        return;
+      }
       if (err) {
         err.prev = lastError;
         lastError = err;
