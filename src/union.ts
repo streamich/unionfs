@@ -180,6 +180,14 @@ export class Union {
     let pathExists = false;
     const iterate = (i = 0, error?: IUnionFsError | null) => {
       if (error) {
+        if (error["code"] !== "ENOENT") {
+          // Immediately fail with this error.
+           // see comment in readdirSync
+          if (cb) {
+            cb(error);
+          }
+          return;
+        }
         error.prev = lastError;
         lastError = error;
       }
@@ -244,6 +252,15 @@ export class Union {
         }
         pathExists = true;
       } catch (err) {
+        if (err.code !== "ENOENT") {
+          // The file *does* exist in this filesystem in the union, but some *other* error happened.
+          // E.g., if you try to get a directory listing on a file one fs doesn't have the file and the
+          // the other fs has the file, then the one that has it throws ENOTDIR, which is what this
+          // function should throw.  I hite this exact problem when working the cpython unit tests
+          // for Lib/test/test_exceptions.py, which check the error code when trying to get a directory
+          // listing on a file.
+          throw err;
+        }
         err.prev = lastError;
         lastError = err;
         if (!i && !pathExists) {
@@ -369,6 +386,9 @@ export class Union {
         if (!fs[method]) throw Error(`Method not supported: "${method}" with args "${args}"`);
         return fs[method].apply(fs, args);
       } catch (err) {
+        if (err["code"] !== "ENOENT") { // see comment in readdirSync
+          throw err;
+        }
         err.prev = lastError;
         lastError = err;
         if (!i) {
@@ -392,6 +412,12 @@ export class Union {
 
     let lastError: IUnionFsError | null = null;
     const iterate = (i = 0, err?: IUnionFsError) => {
+      if (err != null && err?.["code"] !== "ENOENT") {  // see comment in readdirSync
+        if(cb) {
+          cb(err);
+        }
+        return;
+      }
       if (err) {
         err.prev = lastError;
         lastError = err;
