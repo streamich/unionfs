@@ -180,7 +180,7 @@ export class Union {
     let pathExists = false;
     const iterate = (i = 0, error?: IUnionFsError | null) => {
       if (error) {
-        if (error["code"] !== "ENOENT") {
+        if (error["code"] === "ENOTDIR") {
           // Immediately fail with this error.
            // see comment in readdirSync
           if (cb) {
@@ -252,13 +252,11 @@ export class Union {
         }
         pathExists = true;
       } catch (err) {
-        if (err.code !== "ENOENT") {
-          // The file *does* exist in this filesystem in the union, but some *other* error happened.
+        if (err.code === "ENOTDIR") {
+          // The file *does* exist in this filesystem in the union, but ENOTDIR happened.
           // E.g., if you try to get a directory listing on a file one fs doesn't have the file and the
           // the other fs has the file, then the one that has it throws ENOTDIR, which is what this
-          // function should throw.  I hite this exact problem when working the cpython unit tests
-          // for Lib/test/test_exceptions.py, which check the error code when trying to get a directory
-          // listing on a file.
+          // function should throw.
           throw err;
         }
         err.prev = lastError;
@@ -386,7 +384,7 @@ export class Union {
         if (!fs[method]) throw Error(`Method not supported: "${method}" with args "${args}"`);
         return fs[method].apply(fs, args);
       } catch (err) {
-        if (err["code"] !== "ENOENT") { // see comment in readdirSync
+        if (err["code"] === "ENOTDIR") { // see comment in readdirSync
           throw err;
         }
         err.prev = lastError;
@@ -412,7 +410,7 @@ export class Union {
 
     let lastError: IUnionFsError | null = null;
     const iterate = (i = 0, err?: IUnionFsError) => {
-      if (err != null && err?.["code"] !== "ENOENT") {  // see comment in readdirSync
+      if (err != null && err?.["code"] === "ENOTDIR") {  // see comment in readdirSync
         if(cb) {
           cb(err);
         }
