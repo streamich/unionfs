@@ -183,6 +183,24 @@ describe('union', () => {
           expect(() => ufs.readdirSync('/bar')).toThrow();
         });
       });
+
+      describe('copyFileSync()', () => {
+        it('can copy from one filesystem to another', async () => {
+          const vol1 = Volume.fromJSON({
+            '/foo/bar': 'bar',
+          });
+          const vol2 = Volume.fromJSON({
+            '/bar/baz': 'baz',
+          });
+
+          const ufs = new Union();
+          ufs.use(vol1 as any).use(vol2 as any);
+
+          ufs.copyFileSync('/foo/bar', '/bar/barCopy');
+          expect(vol2.readFileSync('/bar/barCopy').toString()).toEqual('bar');
+          expect(vol1.existsSync('/bar/barCopy')).toBeFalsy();
+        });
+      });
     });
     describe('async methods', () => {
       it('Basic one file system', done => {

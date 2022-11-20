@@ -1,6 +1,8 @@
 import { FSWatcher, Dirent } from 'fs';
 import { IFS } from './fs';
 import { Readable, Writable } from 'stream';
+import { dirname } from 'path';
+import { ENOENT } from 'constants';
 const { fsAsyncMethods, fsSyncMethods } = require('fs-monkey/lib/util/lists');
 
 export interface IUnionFsError extends Error {
@@ -13,6 +15,7 @@ const SPECIAL_METHODS = new Set([
   'existsSync',
   'readdir',
   'readdirSync',
+  'copyFileSync',
   'createReadStream',
   'createWriteStream',
   'watch',
@@ -244,6 +247,34 @@ export class Union {
     }
     return this.sortedArrayFromReaddirResult(result);
   };
+
+  public copyFileSync(src: string, dest: string, flags?: number) {
+    const destDir = dirname(dest);
+
+    // CASE 1: dest is a filename. Don't treat, standard copy (opinionated)
+    if (destDir.length == 0) {
+      return this.syncMethod('copyFileSync', [src, dest, flags]);
+    }
+
+    // CASE 2: src doesn't exist in any fs.
+    const srcFS = this.fss.find(fs => fs.existsSync(src));
+    if (!srcFS) {
+      const error = new Error(`no such source file: ${src}`) as NodeJS.ErrnoException;
+      error.errno = ENOENT;
+      throw error;
+    }
+
+    // CASE 3: dest dir does not exist or is in the same fs.
+    // To protect ourselves, simply launch standard copy, whatever the policies
+    // about destination dir doesn't exist.
+    const destFS = this.fss.find(fs => fs.existsSync(destDir));
+    if (!destFS || srcFS == destFS) {
+      return this.syncMethod('copyFileSync', [src, dest, flags]);
+    }
+
+    // CASE 4: different FS. Workaround: read src, write dest.
+    destFS.writeFileSync(dest, srcFS.readFileSync(src));
+  }
 
   public readdirPromise = async (...args): Promise<Array<readdirEntry>> => {
     let lastError: IUnionFsError | null = null;
