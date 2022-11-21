@@ -257,7 +257,11 @@ export class Union {
     }
 
     // CASE 2: src doesn't exist in any fs.
-    const srcFS = this.fss.find(fs => fs.existsSync(src));
+    const srcFS = this.fss.find(fs => {
+      try { return fs.existsSync(src) }
+      catch (error) { return false }; 
+    })
+
     if (!srcFS) {
       const error = new Error(`no such source file: ${src}`) as NodeJS.ErrnoException;
       error.errno = ENOENT;
@@ -267,7 +271,11 @@ export class Union {
     // CASE 3: dest dir does not exist or is in the same fs.
     // To protect ourselves, simply launch standard copy, whatever the policies
     // about destination dir doesn't exist.
-    const destFS = this.fss.find(fs => fs.existsSync(destDir));
+    const destFS = this.fss.find(fs => {
+      try { return fs.existsSync(destDir) }
+      catch (error) { return false };
+    });
+    
     if (!destFS || srcFS == destFS) {
       return this.syncMethod('copyFileSync', [src, dest, flags]);
     }
