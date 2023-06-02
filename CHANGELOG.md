@@ -1,3 +1,10 @@
+# [4.5.0](https://github.com/streamich/unionfs/compare/v4.4.0...v4.5.0) (2023-06-02)
+
+
+### Features
+
+* support `unwatchFile` ([#557](https://github.com/streamich/unionfs/issues/557)) ([721f49d](https://github.com/streamich/unionfs/commit/721f49d1897a52c02a1b68dcde1e37579c700550))
+
 # [4.4.0](https://github.com/streamich/unionfs/compare/v4.3.2...v4.4.0) (2020-03-12)
 
 
