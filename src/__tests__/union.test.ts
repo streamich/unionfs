@@ -8,6 +8,7 @@ function sleep(millisec: number): Promise<void> {
   });
 }
 
+// test
 describe('union', () => {
   describe('Union', () => {
     describe('sync methods', () => {
