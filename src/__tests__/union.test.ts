@@ -55,7 +55,7 @@ describe('union', () => {
 
       describe('watch()', () => {
         it('should create a watcher', () => {
-          const ufs = new Union().use(Volume.fromJSON({ 'foo.js': 'hello test' }, '/tmp') as any);
+          const ufs = new Union().use(Volume.fromJSON({ '/tmp/foo.js': 'hello test' }) as any);
 
           const mockCallback = jest.fn();
           const writtenContent = 'hello world';
@@ -65,7 +65,7 @@ describe('union', () => {
             ufs.writeFileSync('/tmp/foo.js', writtenContent);
 
             expect(mockCallback).toBeCalledTimes(2);
-            expect(mockCallback).toBeCalledWith('change', '/tmp/foo.js');
+            expect(mockCallback).toBeCalledWith('change', 'foo.js');
           } finally {
             watcher.close();
           }
