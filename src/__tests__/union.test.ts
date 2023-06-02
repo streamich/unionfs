@@ -61,12 +61,14 @@ describe('union', () => {
           const writtenContent = 'hello world';
           const watcher = ufs.watch('/tmp/foo.js', mockCallback);
 
-          ufs.writeFileSync('/tmp/foo.js', writtenContent);
+          try {
+            ufs.writeFileSync('/tmp/foo.js', writtenContent);
 
-          expect(mockCallback).toBeCalledTimes(2);
-          expect(mockCallback).toBeCalledWith('change', '/tmp/foo.js');
-
-          watcher.close();
+            expect(mockCallback).toBeCalledTimes(2);
+            expect(mockCallback).toBeCalledWith('change', '/tmp/foo.js');
+          } finally {
+            watcher.close();
+          }
         });
 
         it('can watchFile and unwatchFile', async () => {
