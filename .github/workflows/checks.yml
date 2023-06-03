@@ -99,7 +99,24 @@ jobs:
       - name: run tests
         run: yarn test
         env:
-          CI: true
+  release-dry-run:
+    name: Release new version
+    needs: [prettier, typecheck, test-node, test-os]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+          cache: yarn
+      - name: install
+        run: yarn
+      - run: yarn semantic-release --dry-run --debug
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+          CI: false
   release:
     if:
       # prettier-ignore
