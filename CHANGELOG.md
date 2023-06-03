@@ -1,3 +1,10 @@
+## [4.5.1](https://github.com/streamich/unionfs/compare/v4.5.0...v4.5.1) (2023-06-03)
+
+
+### Bug Fixes
+
+* actually build library before publishing ([#767](https://github.com/streamich/unionfs/issues/767)) ([fe706ad](https://github.com/streamich/unionfs/commit/fe706ad4376237664b6fd77e28fb3499dae159eb))
+
 # [4.5.0](https://github.com/streamich/unionfs/compare/v4.4.0...v4.5.0) (2023-06-02)
 
 
