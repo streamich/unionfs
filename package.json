@@ -23,6 +23,7 @@
   ],
   "scripts": {
     "build": "tsc -p .",
+    "prepack": "yarn build",
     "prettier": "prettier --ignore-path .gitignore --write \"src/**/*.{ts,js}\"",
     "prettier:diff": "prettier -l \"src/**/*.{ts,js}\"",
     "semantic-release": "semantic-release",
