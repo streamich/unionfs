@@ -1,9 +1,7 @@
 {
   "name": "unionfs",
-  "version": "4.4.0",
+  "version": "4.5.1",
   "description": "Use multiple `fs` modules in a union.",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
   "keywords": [
     "fs",
     "file",
@@ -14,40 +12,37 @@
     "many file systems",
     "multiple"
   ],
-  "files": [
-    "lib"
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/streamich/unionfs.git"
   },
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "build": "tsc -p .",
-    "test": "jest",
-    "test-watch": "jest --watch",
-    "test-coverage": "jest --coverage",
-    "semantic-release": "semantic-release",
+    "prepack": "yarn build",
     "prettier": "prettier --ignore-path .gitignore --write \"src/**/*.{ts,js}\"",
-    "prettier:diff": "prettier -l \"src/**/*.{ts,js}\""
+    "prettier:diff": "prettier -l \"src/**/*.{ts,js}\"",
+    "semantic-release": "semantic-release",
+    "test": "jest",
+    "test-coverage": "jest --coverage",
+    "test-watch": "jest --watch",
+    "typecheck": "tsc -p ."
   },
-  "dependencies": {
-    "fs-monkey": "^1.0.0"
-  },
-  "devDependencies": {
-    "@semantic-release/changelog": "6.0.1",
-    "@semantic-release/git": "10.0.1",
-    "@semantic-release/npm": "9.0.1",
-    "@types/jest": "27.4.1",
-    "@types/node": "11.15.54",
-    "jest": "27.5.1",
-    "memfs": "3.4.1",
-    "memory-fs": "0.5.0",
-    "prettier": "2.5.1",
-    "semantic-release": "19.0.2",
-    "source-map-support": "0.5.21",
-    "ts-jest": "27.1.3",
-    "ts-node": "10.7.0",
-    "typescript": "4.6.2"
+  "release": {
+    "prepare": [
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/git"
+    ],
+    "verifyConditions": [
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/git"
+    ]
   },
   "jest": {
     "moduleFileExtensions": [
@@ -57,24 +52,31 @@
       "jsx"
     ],
     "testEnvironment": "node",
-    "transformIgnorePatterns": [],
+    "testMatch": [
+      "**/src/__tests__/**/*.ts?(x)"
+    ],
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },
-    "testMatch": [
-      "**/src/__tests__/**/*.ts?(x)"
-    ]
+    "transformIgnorePatterns": []
   },
-  "release": {
-    "verifyConditions": [
-      "@semantic-release/changelog",
-      "@semantic-release/npm",
-      "@semantic-release/git"
-    ],
-    "prepare": [
-      "@semantic-release/changelog",
-      "@semantic-release/npm",
-      "@semantic-release/git"
-    ]
+  "dependencies": {
+    "fs-monkey": "^1.0.0"
+  },
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/npm": "^9.0.1",
+    "@types/jest": "^28.1.2",
+    "@types/node": "^11.15.54",
+    "jest": "^28.1.1",
+    "memfs": "^3.4.4",
+    "memory-fs": "^0.5.0",
+    "prettier": "^2.7.1",
+    "semantic-release": "^19.0.3",
+    "source-map-support": "^0.5.21",
+    "ts-jest": "^28.0.5",
+    "ts-node": "^10.8.1",
+    "typescript": "^4.7.4"
   }
 }

@@ -15,8 +15,9 @@ script:
 matrix:
   allow_failures: []
   fast_finish: true
-after_success:
-  - npx semantic-release
+# releases are going to be done by GitHub Actions
+#after_success:
+#  - npx semantic-release
 branches:
   except:
     - /^v\d+\.\d+\.\d+$/

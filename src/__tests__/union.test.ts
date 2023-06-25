@@ -2,6 +2,12 @@ import { Union } from '..';
 import { Volume, createFsFromVolume } from 'memfs';
 import * as fs from 'fs';
 
+function sleep(millisec: number): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    setTimeout(resolve, millisec);
+  });
+}
+
 describe('union', () => {
   describe('Union', () => {
     describe('sync methods', () => {
@@ -49,18 +55,39 @@ describe('union', () => {
 
       describe('watch()', () => {
         it('should create a watcher', () => {
-          const ufs = new Union().use(Volume.fromJSON({ 'foo.js': 'hello test' }, '/tmp') as any);
+          const ufs = new Union().use(Volume.fromJSON({ '/tmp/foo.js': 'hello test' }) as any);
 
           const mockCallback = jest.fn();
           const writtenContent = 'hello world';
           const watcher = ufs.watch('/tmp/foo.js', mockCallback);
 
-          ufs.writeFileSync('/tmp/foo.js', writtenContent);
+          try {
+            ufs.writeFileSync('/tmp/foo.js', writtenContent);
 
-          expect(mockCallback).toBeCalledTimes(2);
-          expect(mockCallback).toBeCalledWith('change', '/tmp/foo.js');
+            expect(mockCallback).toBeCalledTimes(2);
+            expect(mockCallback).toBeCalledWith('change', 'foo.js');
+          } finally {
+            watcher.close();
+          }
+        });
 
-          watcher.close();
+        it('can watchFile and unwatchFile', async () => {
+          const memfs = Volume.fromJSON({ '/foo': '1' });
+          const ufs = new Union().use(memfs as any);
+          const mockCallback = jest.fn();
+          ufs.watchFile('/foo', { interval: 10 }, mockCallback);
+
+          await sleep(100);
+
+          memfs.writeFileSync('/foo', '2');
+          await sleep(100);
+          expect(mockCallback).toBeCalled();
+          mockCallback.mockClear();
+
+          ufs.unwatchFile('/foo');
+          memfs.writeFileSync('/foo', '3');
+          await sleep(100);
+          expect(mockCallback).not.toBeCalled();
         });
       });
 
@@ -443,7 +470,7 @@ describe('union', () => {
         expect(ufs.createReadStream(__filename)).toHaveProperty('_readableState');
       });
 
-      it('can create Writable Streams', () => {
+      it('can create Writable Streams', async () => {
         const vol = Volume.fromJSON({ '/foo': 'bar' });
         const ufs = new Union();
         const realFile = __filename + '.test';
@@ -453,8 +480,12 @@ describe('union', () => {
         expect(vol.createWriteStream('/foo')).toHaveProperty('_writableState');
         expect(fs.createWriteStream(realFile)).toHaveProperty('_writableState');
 
+        await sleep(100);
+
         expect(ufs.createWriteStream('/foo')).toHaveProperty('_writableState');
         expect(ufs.createWriteStream(realFile)).toHaveProperty('_writableState');
+
+        await sleep(100);
 
         ufs.unlinkSync(realFile);
       });

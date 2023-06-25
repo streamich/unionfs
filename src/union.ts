@@ -129,7 +129,13 @@ export class Union {
   }
 
   public unwatchFile = (...args) => {
-    throw new Error('unwatchFile is not supported, please use watchFile');
+    for (const fs of this.fss) {
+      try {
+        fs.unwatchFile.apply(fs, args);
+      } catch (e) {
+        // dunno what to do here...
+      }
+    }
   };
 
   public watch = (...args) => {
@@ -399,7 +405,7 @@ export class Union {
       }
 
       // Replace `callback` with our intermediate function.
-      args[lastarg] = function(err) {
+      args[lastarg] = function (err) {
         if (err) return iterate(i + 1, err);
         if (cb) cb.apply(cb, arguments);
       };
