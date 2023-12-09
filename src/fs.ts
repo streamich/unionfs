@@ -1,5 +1,5 @@
-import { Writable, Readable } from 'stream';
-import * as fs from 'fs';
+import type { Writable, Readable } from 'stream';
+import type * as fs from 'fs';
 
 type FSMethods =
   | 'renameSync'
@@ -78,3 +78,5 @@ export interface IFS extends FS {
   WriteStream: typeof Writable | (new (...args: any[]) => Writable);
   ReadStream: typeof Readable | (new (...args: any[]) => Readable);
 }
+
+export type StatOptions = fs.StatOptions;

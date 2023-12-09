@@ -1,6 +1,8 @@
+import { describe, expect, it } from '@jest/globals';
 import { Union } from '..';
 import { Volume, createFsFromVolume } from 'memfs';
 import * as fs from 'fs';
+
 
 function sleep(millisec: number): Promise<void> {
   return new Promise<void>((resolve, reject) => {
@@ -8,8 +10,81 @@ function sleep(millisec: number): Promise<void> {
   });
 }
 
+
+// fs.statSync(path[, options])#
+// History
+// path <string> | <Buffer> | <URL>
+// options <Object>
+// bigint <boolean> Whether the numeric values in the returned <fs.Stats> object should be bigint. Default: false.
+// throwIfNoEntry <boolean> Whether an exception will be thrown if no file system entry exists, rather than returning undefined. Default: true.
+// Returns: <fs.Stats>
+// Retrieves the <fs.Stats> for the path.
 describe('union', () => {
   describe('Union', () => {
+    describe('special handling of stat*', () => {
+
+      it('statSync when file is missing', () => {
+        const vol = Volume.fromJSON({});
+
+        const ufs = new Union();
+        ufs.use(vol as any);
+
+        expect(() => ufs.statSync('/does-not-exist.file')).toThrow();
+        expect(() => ufs.statSync('/does-not-exist.file', undefined)).toThrow();
+        expect(() => ufs.statSync('/does-not-exist.file', { throwIfNoEntry: true })).toThrow();
+        expect(ufs.statSync('/does-not-exist.file', { throwIfNoEntry: false })).toBe(undefined);
+      });
+
+      it('statSync with unioned fs - throwIfNoEntry', () => {
+        const vol_layer0 = Volume.fromJSON({ "/exists.in.layer0.file": "contents" });
+        const vol_layer1 = Volume.fromJSON({ "/exists.in.layer1.file": "contents" });
+
+        const ufs = new Union();
+        ufs.use(vol_layer0 as any);
+        ufs.use(vol_layer1 as any);
+
+        expect(ufs.statSync('/exists.in.layer0.file', { throwIfNoEntry: false })).not.toBeUndefined()
+        expect(ufs.statSync('/exists.in.layer1.file', { throwIfNoEntry: false })).not.toBeUndefined()
+        expect(ufs.statSync('/does-not-exist.file', { throwIfNoEntry: false })).toBeUndefined()
+
+        expect(() => ufs.statSync('/does-not-exist.file')).toThrow();
+        expect(() => ufs.statSync('/does-not-exist.file', undefined)).toThrow();
+        expect(() => ufs.statSync('/does-not-exist.file', { throwIfNoEntry: true })).toThrow();
+      });
+
+
+      it('stat with unioned fs - throwIfNoEntry', async () => {
+        const vol_layer0 = Volume.fromJSON({ "/exists.in.layer0.file": "contents" });
+        const vol_layer1 = Volume.fromJSON({ "/exists.in.layer1.file": "contents" });
+
+        const ufs = new Union();
+        ufs.use(vol_layer0 as any);
+        ufs.use(vol_layer1 as any);
+
+        await (new Promise((resolve) => {
+          ufs.stat('/exists.in.layer0.file', { throwIfNoEntry: false }, (err, stats) => {
+            expect(err).toBeNull();
+            expect(stats).not.toBeUndefined();
+            resolve(null);
+          });
+        }));
+        await (new Promise((resolve) => {
+          ufs.stat('/exists.in.layer1.file', { throwIfNoEntry: false }, (err, stats) => {
+            expect(err).toBeNull();
+            expect(stats).not.toBeUndefined();
+            resolve(null);
+          });
+        }));
+        await (new Promise((resolve) => {
+          ufs.stat('/does-not-exist.file', { throwIfNoEntry: false }, (err, stats) => {
+            expect(err).toBeNull();
+            expect(stats).toBeUndefined();
+            resolve(null);
+          });
+        }));
+      });
+    })
+
     describe('sync methods', () => {
       it('Basic one file system', () => {
         const vol = Volume.fromJSON({ '/foo': 'bar' });
