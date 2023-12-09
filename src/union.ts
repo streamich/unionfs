@@ -1,5 +1,5 @@
-import { FSWatcher, Dirent } from 'fs';
-import { IFS } from './fs';
+import type { FSWatcher, Dirent, StatOptions, Stats } from 'fs';
+import type { IFS } from './fs';
 import { Readable, Writable } from 'stream';
 const { fsAsyncMethods, fsSyncMethods } = require('fs-monkey/lib/util/lists');
 
@@ -18,6 +18,8 @@ const SPECIAL_METHODS = new Set([
   'watch',
   'watchFile',
   'unwatchFile',
+  'statSync',
+  'stat',
 ]);
 
 const createFSProxy = (watchers: FSWatcher[]) =>
@@ -75,6 +77,9 @@ const fsPromisesMethods = [
   'appendFile',
   'readFile',
 ] as const;
+
+
+type DiscardResult = (idx: number, result: any) => any;
 
 /**
  * Union object represents a stack of filesystems
@@ -152,6 +157,27 @@ export class Union {
       }
     }
   };
+
+  public stat(path: string, options: StatOptions | undefined, cb) {
+    const discardResult: DiscardResult = (idx: number, result: [any, Stats]) => {
+      return idx && result[1] === undefined && options?.throwIfNoEntry === false;
+    }
+
+    if (typeof options === 'function') {
+      cb = options;
+      options = undefined;
+    }
+
+    return this.asyncMethod("stat", [path, options, cb], discardResult);
+  }
+
+  public statSync = (path: string, options: StatOptions) => {
+    const discardResult: DiscardResult = (idx: number, result: Stats) => {
+      return idx && result === undefined && options?.throwIfNoEntry === false;
+    }
+
+    return this.syncMethod("statSync", [path, options], discardResult);
+  }
 
   public existsSync = (path: string) => {
     for (const fs of this.fss) {
@@ -348,13 +374,17 @@ export class Union {
     return this;
   }
 
-  private syncMethod(method: string, args: any[]) {
+  private syncMethod(method: string, args: any[], discardResult?: DiscardResult) {
     let lastError: IUnionFsError | null = null;
     for (let i = this.fss.length - 1; i >= 0; i--) {
       const fs = this.fss[i];
       try {
         if (!fs[method]) throw Error(`Method not supported: "${method}" with args "${args}"`);
-        return fs[method].apply(fs, args);
+        const result = fs[method].apply(fs, args);
+        if (discardResult && i && discardResult(i, result)) {
+          continue;
+        }
+        return result
       } catch (err) {
         err.prev = lastError;
         lastError = err;
@@ -369,7 +399,7 @@ export class Union {
     }
   }
 
-  private asyncMethod(method: string, args: any[]) {
+  private asyncMethod(method: string, args: any[], discardResult?: DiscardResult) {
     let lastarg = args.length - 1;
     let cb = args[lastarg];
     if (typeof cb !== 'function') {
@@ -394,7 +424,12 @@ export class Union {
       // Replace `callback` with our intermediate function.
       args[lastarg] = function (err) {
         if (err) return iterate(i + 1, err);
-        if (cb) cb.apply(cb, arguments);
+        if (cb) {
+          if (discardResult && j && discardResult(j, arguments)) {
+            return iterate(i + 1, err);
+          }
+          cb.apply(cb, arguments);
+        }
       };
 
       const j = this.fss.length - i - 1;
@@ -404,6 +439,7 @@ export class Union {
       if (!func) iterate(i + 1, Error('Method not supported: ' + method));
       else func.apply(fs, args);
     };
+
     iterate();
   }
 
