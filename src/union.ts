@@ -1,5 +1,6 @@
 import { FSWatcher, Dirent } from 'fs';
 import { IFS } from './fs';
+import { dirname } from 'path';
 import { Readable, Writable } from 'stream';
 const { fsAsyncMethods, fsSyncMethods } = require('fs-monkey/lib/util/lists');
 
@@ -314,12 +315,31 @@ export class Union {
 
   public createWriteStream = (path: string) => {
     let lastError = null;
+    const fssWithFilePath: IFS[] = [];
+    const fssWithParentDir: IFS[] = [];
+
     for (const fs of this.fss) {
       try {
         if (!fs.createWriteStream) throw Error(`Method not supported: "createWriteStream"`);
 
-        fs.statSync(path); //we simply stat first to exit early for mocked fs'es
-        //TODO which filesystem to write to?
+        //we simply stat first to exit early for mocked fs'es
+        if (!fs.statSync(dirname(path)).isDirectory()) {
+          throw new Error(`path "${dirname(path)}" is not a directory`);
+        }
+        if (fs.existsSync(path)) {
+          fssWithFilePath.push(fs);
+        } else {
+          fssWithParentDir.push(fs);
+        }
+      } catch (err) {
+        lastError = err;
+      }
+    }
+
+    // First try writing to filesystems where the file path exists.
+    // Then try writing to filesystems where the parent directory exists.
+    for (const fs of [...fssWithFilePath, ...fssWithParentDir]) {
+      try {
         const stream = fs.createWriteStream(path);
         if (!stream) {
           throw new Error('no valid stream');

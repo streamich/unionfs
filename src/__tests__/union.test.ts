@@ -489,6 +489,34 @@ describe('union', () => {
 
         ufs.unlinkSync(realFile);
       });
+
+      describe('createWriteStream', () => {
+        it('creates a new file when only parent directory exists', async () => {
+          const vol = Volume.fromJSON({ '/foo': null });
+          const vol2 = Volume.fromJSON({ '/bar': null });
+          const ufs = new Union();
+          ufs.use(vol as any).use(vol2 as any);
+
+          const stream = ufs.createWriteStream('/bar/file');
+          stream.end('content');
+          await new Promise(resolve => stream.once('close', resolve));
+
+          expect(vol2.readFileSync('/bar/file', 'utf8')).toBe('content');
+        });
+
+        it('writes to an existing file even if parent dir exists on an earlier fss', async () => {
+          const vol = Volume.fromJSON({ '/bar': null });
+          const vol2 = Volume.fromJSON({ '/bar/file': '' });
+          const ufs = new Union();
+          ufs.use(vol as any).use(vol2 as any);
+
+          const stream = ufs.createWriteStream('/bar/file');
+          stream.end('content');
+          await new Promise(resolve => stream.once('close', resolve));
+
+          expect(vol2.readFileSync('/bar/file', 'utf8')).toBe('content');
+        });
+      });
     });
   });
 });
