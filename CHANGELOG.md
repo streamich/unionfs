@@ -1,3 +1,10 @@
+## [4.5.2](https://github.com/streamich/unionfs/compare/v4.5.1...v4.5.2) (2024-03-19)
+
+
+### Bug Fixes
+
+* `createWriteStream` failing to create new files in directories ([#783](https://github.com/streamich/unionfs/issues/783)) ([cc52c7f](https://github.com/streamich/unionfs/commit/cc52c7fb42e3c76b14a657c3eacd226358000d53))
+
 ## [4.5.1](https://github.com/streamich/unionfs/compare/v4.5.0...v4.5.1) (2023-06-03)
 
 
