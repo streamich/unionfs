@@ -1,6 +1,6 @@
 {
   "name": "unionfs",
-  "version": "4.5.2",
+  "version": "4.5.3",
   "description": "Use multiple `fs` modules in a union.",
   "keywords": [
     "fs",

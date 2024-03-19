@@ -1,3 +1,10 @@
+## [4.5.3](https://github.com/streamich/unionfs/compare/v4.5.2...v4.5.3) (2024-03-19)
+
+
+### Bug Fixes
+
+* `createWriteStream` and `createReadStream` targeting fss in wrong order ([#785](https://github.com/streamich/unionfs/issues/785)) ([944275d](https://github.com/streamich/unionfs/commit/944275d6289a3a30d952de74ba1c67baab21ffb3))
+
 ## [4.5.2](https://github.com/streamich/unionfs/compare/v4.5.1...v4.5.2) (2024-03-19)
 
 
