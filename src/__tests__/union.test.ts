@@ -161,6 +161,19 @@ describe('union', () => {
           expect(ufs.readdirSync('/bar')).toEqual(['baz', 'qux']);
         });
 
+        // regression test for https://github.com/streamich/unionfs/issues/782
+        it('does not throw error when directory is empty and other fs fails', () => {
+          const vol = Volume.fromJSON({});
+          const vol2 = Volume.fromJSON({
+            '/bar': null,
+          });
+
+          const ufs = new Union();
+          ufs.use(vol as any);
+          ufs.use(vol2 as any);
+          expect(ufs.readdirSync('/bar')).toEqual([]);
+        });
+
         it('honors the withFileTypes: true option', () => {
           const vol = Volume.fromJSON({
             '/foo/bar': 'bar',
@@ -304,6 +317,23 @@ describe('union', () => {
           ufs.readdir('/bar', (err, files) => {
             expect(err).toBeNull();
             expect(files).toEqual(['baz', 'qux']);
+            done();
+          });
+        });
+
+        // regression test for https://github.com/streamich/unionfs/issues/782
+        it('does not throw error when directory is empty and other fs fails', done => {
+          const vol = Volume.fromJSON({});
+          const vol2 = Volume.fromJSON({
+            '/bar': null,
+          });
+
+          const ufs = new Union();
+          ufs.use(vol as any);
+          ufs.use(vol2 as any);
+          ufs.readdir('/bar', (err, files) => {
+            expect(err).toBeNull();
+            expect(files).toEqual([]);
             done();
           });
         });

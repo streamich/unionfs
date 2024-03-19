@@ -176,18 +176,23 @@ export class Union {
       lastarg++;
     }
 
+    let numErrors = 0;
     let lastError: IUnionFsError | null = null;
     let result = new Map<string, readdirEntry>();
     const iterate = (i = 0, error?: IUnionFsError | null) => {
       if (error) {
         error.prev = lastError;
         lastError = error;
+        numErrors++;
       }
 
-      // Already tried all file systems, return the last error.
+      // Already tried all file systems
       if (i >= this.fss.length) {
-        // last one
         if (cb) {
+          // If any previous file system succeeded, don't throw an error.
+          if (numErrors < this.fss.length) {
+            return cb(null, this.sortedArrayFromReaddirResult(result));
+          }
           cb(error || Error('No file systems attached.'));
         }
         return;
@@ -195,20 +200,13 @@ export class Union {
 
       // Replace `callback` with our intermediate function.
       args[lastarg] = (err, resArg: readdirEntry[]) => {
-        if (result.size === 0 && err) {
-          return iterate(i + 1, err);
-        }
         if (resArg) {
           for (const res of resArg) {
             result.set(this.pathFromReaddirEntry(res), res);
           }
         }
 
-        if (i === this.fss.length - 1) {
-          return cb(null, this.sortedArrayFromReaddirResult(result));
-        } else {
-          return iterate(i + 1, error);
-        }
+        return iterate(i + 1, err);
       };
 
       const j = this.fss.length - i - 1;
@@ -222,6 +220,7 @@ export class Union {
   };
 
   public readdirSync = (...args): Array<readdirEntry> => {
+    let numErrors = 0;
     let lastError: IUnionFsError | null = null;
     let result = new Map<string, readdirEntry>();
     for (let i = this.fss.length - 1; i >= 0; i--) {
@@ -234,8 +233,9 @@ export class Union {
       } catch (err) {
         err.prev = lastError;
         lastError = err;
-        if (result.size === 0 && !i) {
-          // last one
+        numErrors++;
+        if (numErrors === this.fss.length) {
+          // all filesystems errored
           throw err;
         } else {
           // Ignore error...
