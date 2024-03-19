@@ -290,7 +290,8 @@ export class Union {
 
   public createReadStream = (path: string) => {
     let lastError = null;
-    for (const fs of this.fss) {
+    for (let i = this.fss.length - 1; i >= 0; i--) {
+      const fs = this.fss[i];
       try {
         if (!fs.createReadStream) throw Error(`Method not supported: "createReadStream"`);
 
@@ -318,7 +319,8 @@ export class Union {
     const fssWithFilePath: IFS[] = [];
     const fssWithParentDir: IFS[] = [];
 
-    for (const fs of this.fss) {
+    for (let i = this.fss.length - 1; i >= 0; i--) {
+      const fs = this.fss[i];
       try {
         if (!fs.createWriteStream) throw Error(`Method not supported: "createWriteStream"`);
 
@@ -357,10 +359,10 @@ export class Union {
 
   /**
    * Adds a filesystem to the list of filesystems in the union
-   * The new filesystem object is added as the last filesystem used
+   * The new filesystem object is used as the first filesystem
    * when searching for a file.
    *
-   * @param fs the filesystem interface to be added to the queue of FS's
+   * @param fs the filesystem interface to be added to the head of the queue of FS's
    * @returns this instance of a unionFS
    */
   use(fs: IFS): this {

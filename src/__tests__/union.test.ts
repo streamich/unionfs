@@ -490,9 +490,60 @@ describe('union', () => {
         ufs.unlinkSync(realFile);
       });
 
+      describe('createReadStream', () => {
+        it('targets fss in reverse order', async () => {
+          const vol = Volume.fromJSON({ '/foo/file': 'vol' });
+          const vol2 = Volume.fromJSON({ '/foo/file': 'vol2' });
+          const vol3 = Volume.fromJSON({ '/bar': null });
+          const ufs = new Union();
+          ufs
+            .use(vol as any)
+            .use(vol2 as any)
+            .use(vol3 as any);
+
+          let data = '';
+          const stream = ufs.createReadStream('/foo/file');
+          stream.on('data', chunk => (data += chunk));
+          await new Promise(resolve => stream.once('close', resolve));
+
+          expect(data).toBe('vol2');
+        });
+      });
+
       describe('createWriteStream', () => {
+        it('targets fss in reverse order', async () => {
+          const vol = Volume.fromJSON({ '/foo/file': '' });
+          const vol2 = Volume.fromJSON({ '/foo/file': '' });
+          const vol3 = Volume.fromJSON({ '/bar': null });
+          const ufs = new Union();
+          ufs
+            .use(vol as any)
+            .use(vol2 as any)
+            .use(vol3 as any);
+
+          const stream = ufs.createWriteStream('/foo/file');
+          stream.end('content');
+          await new Promise(resolve => stream.once('close', resolve));
+
+          expect(vol.readFileSync('/foo/file', 'utf8')).toBe('');
+          expect(vol2.readFileSync('/foo/file', 'utf8')).toBe('content');
+        });
+
         it('creates a new file when only parent directory exists', async () => {
-          const vol = Volume.fromJSON({ '/foo': null });
+          const vol = Volume.fromJSON({ '/bar': null });
+          const vol2 = Volume.fromJSON({ '/foo': null });
+          const ufs = new Union();
+          ufs.use(vol as any).use(vol2 as any);
+
+          const stream = ufs.createWriteStream('/bar/file');
+          stream.end('content');
+          await new Promise(resolve => stream.once('close', resolve));
+
+          expect(vol.readFileSync('/bar/file', 'utf8')).toBe('content');
+        });
+
+        it('writes to an existing file even if parent dir exists on a later fss', async () => {
+          const vol = Volume.fromJSON({ '/bar/file': '' });
           const vol2 = Volume.fromJSON({ '/bar': null });
           const ufs = new Union();
           ufs.use(vol as any).use(vol2 as any);
@@ -501,20 +552,7 @@ describe('union', () => {
           stream.end('content');
           await new Promise(resolve => stream.once('close', resolve));
 
-          expect(vol2.readFileSync('/bar/file', 'utf8')).toBe('content');
-        });
-
-        it('writes to an existing file even if parent dir exists on an earlier fss', async () => {
-          const vol = Volume.fromJSON({ '/bar': null });
-          const vol2 = Volume.fromJSON({ '/bar/file': '' });
-          const ufs = new Union();
-          ufs.use(vol as any).use(vol2 as any);
-
-          const stream = ufs.createWriteStream('/bar/file');
-          stream.end('content');
-          await new Promise(resolve => stream.once('close', resolve));
-
-          expect(vol2.readFileSync('/bar/file', 'utf8')).toBe('content');
+          expect(vol.readFileSync('/bar/file', 'utf8')).toBe('content');
         });
       });
     });
