@@ -1,3 +1,10 @@
+## [4.5.4](https://github.com/streamich/unionfs/compare/v4.5.3...v4.5.4) (2024-03-19)
+
+
+### Bug Fixes
+
+* `readdir` and `readdirSync` failing on valid empty directory if another fs fails ([#787](https://github.com/streamich/unionfs/issues/787)) ([dab090e](https://github.com/streamich/unionfs/commit/dab090ede6b757b68af0408cea9086e9d511d988))
+
 ## [4.5.3](https://github.com/streamich/unionfs/compare/v4.5.2...v4.5.3) (2024-03-19)
 
 
