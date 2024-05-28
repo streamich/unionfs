@@ -75,7 +75,7 @@
     "prettier": "^3.0.0",
     "semantic-release": "^19.0.3",
     "source-map-support": "^0.5.21",
-    "ts-jest": "29.1.1",
+    "ts-jest": "29.1.4",
     "ts-node": "^10.8.1",
     "typescript": "^5.0.0"
   }
