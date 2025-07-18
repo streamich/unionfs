@@ -1,3 +1,10 @@
+# [4.6.0](https://github.com/streamich/unionfs/compare/v4.5.4...v4.6.0) (2025-07-18)
+
+
+### Features
+
+* copy static properties from source `fs` ([#806](https://github.com/streamich/unionfs/issues/806)) ([357248d](https://github.com/streamich/unionfs/commit/357248d2c03c803fed13b185b9eda3df3cf31f24))
+
 ## [4.5.4](https://github.com/streamich/unionfs/compare/v4.5.3...v4.5.4) (2024-03-19)
 
 
