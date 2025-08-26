@@ -32,6 +32,7 @@ type FSMethods =
   | 'readFileSync'
   | 'writeFileSync'
   | 'appendFileSync'
+  | 'copyFileSync'
   | 'existsSync'
   | 'accessSync'
   | 'createReadStream'
