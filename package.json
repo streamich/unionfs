@@ -2,6 +2,7 @@
   "name": "unionfs",
   "version": "4.6.0",
   "description": "Use multiple `fs` modules in a union.",
+  "license": "Unlicense",
   "keywords": [
     "fs",
     "file",
