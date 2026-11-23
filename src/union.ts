@@ -21,7 +21,8 @@ const SPECIAL_METHODS = new Set([
   'unwatchFile',
 ]);
 
-const ADDITIONAL_PROPERTIES = ['F_OK', 'R_OK', 'W_OK', 'X_OK', 'constants', 'Stats', 'Dirent'];
+const ACCESS_CONSTANTS = ['F_OK', 'R_OK', 'W_OK', 'X_OK'];
+const ADDITIONAL_PROPERTIES = ['constants', 'Stats', 'Dirent'];
 
 const createFSProxy = (watchers: FSWatcher[]) =>
   new Proxy(
@@ -371,6 +372,9 @@ export class Union {
     this.fss.push(fs);
     for (const prop of ADDITIONAL_PROPERTIES) {
       this[prop] = fs[prop];
+    }
+    for (const prop of ACCESS_CONSTANTS) {
+      this[prop] = fs.constants?.[prop] ?? fs[prop];
     }
     return this;
   }

@@ -588,6 +588,52 @@ describe('union', () => {
     });
 
     describe('additional props', () => {
+      it('uses access constants without reading deprecated aliases', () => {
+        const constants = { F_OK: 0, R_OK: 4, W_OK: 2, X_OK: 1 };
+        const filesystem = { constants };
+        for (const prop of Object.keys(constants)) {
+          Object.defineProperty(filesystem, prop, {
+            get() {
+              throw new Error(`Deprecated access to ${prop}`);
+            },
+          });
+        }
+
+        const ufs = new Union().use(filesystem as any);
+
+        for (const prop of Object.keys(constants)) {
+          expect(ufs[prop]).toBe(constants[prop]);
+        }
+        expect(ufs.constants).toBe(constants);
+      });
+
+      it('keeps legacy access aliases when constants are missing', () => {
+        const aliases = { F_OK: 0, R_OK: 4, W_OK: 2, X_OK: 1 };
+        for (const constants of [undefined, { F_OK: 0 }]) {
+          const ufs = new Union().use({ ...aliases, constants } as any);
+
+          for (const prop of Object.keys(aliases)) {
+            expect(ufs[prop]).toBe(aliases[prop]);
+          }
+        }
+      });
+
+      it('takes access constants from the most recently added filesystem', () => {
+        const ufs = new Union().use({ F_OK: 9, R_OK: 8, W_OK: 7, X_OK: 6 } as any);
+        const constants = { F_OK: 0, R_OK: 4, W_OK: 2, X_OK: 1 };
+
+        ufs.use({ constants } as any);
+
+        for (const prop of Object.keys(constants)) {
+          expect(ufs[prop]).toBe(constants[prop]);
+        }
+
+        ufs.use({} as any);
+        for (const prop of Object.keys(constants)) {
+          expect(ufs[prop]).toBeUndefined();
+        }
+      });
+
       it('adds F_OK from the fs', () => {
         const vol = Volume.fromJSON({});
         const fs = createFsFromVolume(vol);
